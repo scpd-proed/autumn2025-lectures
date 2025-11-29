@@ -84,7 +84,7 @@ To run locally:
 
 ### Mon Nov 17: introduction to language models (lecture 17)
 
-- [language_models](https://stanford-cs221.github.io/autumn2025-lectures/langauge_models.pdf)
+- [language_models](https://stanford-cs221.github.io/autumn2025-lectures/language_models.pdf)
 
 ### Wed Nov 19: AI & Society (lecture 18)
 
