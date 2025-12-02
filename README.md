@@ -89,3 +89,7 @@ To run locally:
 ### Wed Nov 19: AI & Society (lecture 18)
 
 - [society](https://stanford-cs221.github.io/autumn2025-lectures/?trace=society)
+
+### Mon Dec 1: Economics of AI (lecture 19)
+
+- [economics](https://docs.google.com/presentation/d/1jCn1OV4H1HKzQ0PWzRn2_bfOWKw43eS33wyramBt2z8/edit)
