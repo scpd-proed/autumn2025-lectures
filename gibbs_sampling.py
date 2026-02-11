@@ -156,7 +156,7 @@ def gibbs_telephone():
     text("- Compute the conditional distribution of X_i given all other variables")
     text("- Sample X_i from this conditional distribution")
     
-    text("Initialize with an arbitrary sample that satisfies the evidence (D = 1):")
+    text("Initialize with an arbitrary sample that satisfies the evidence (C = 1):")
     x = {"A": 1, "B": 0, "C": 1}  # @inspect x
 
     text("**Conditional distribution**")

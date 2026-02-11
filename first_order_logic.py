@@ -297,8 +297,8 @@ def first_order_logic_semantics():
 
     text("**Attempt 1**")
     text("Recall that in first-order logic, atomic formulas are predicates applied to terms.")
-    term = Knows(alice, arithmetic)  # formula Knows(alice, arithmetic)
-    term = Student(alice)  # formula Student(alice)
+    formula = Knows(alice, arithmetic)  # formula Knows(alice, arithmetic)
+    formula = Student(alice)  # formula Student(alice)
     
     text("So let's define a model as an assignment of truth values to atomic formulas.")
     w = {Student(alice): True, Knows(alice, arithmetic): True}
@@ -595,7 +595,7 @@ def first_order_logic_inference_rules():
         result = substitute(Knows(x, z), theta) # @inspect result @stepover
 
     text("Complexity:")
-    text("- Each application of Modus ponens produces an aotmic formula (e.g., Knows(alice, logic))")
+    text("- Each application of Modus ponens produces an atomic formula (e.g., Knows(alice, logic))")
     text("- If we have no functions, then complexity is num-constant-symbols^(maximum-predicate-arity)")
     text("- If we have functions, then complexity then possibly infinite:")
     Knows(alice, logic)

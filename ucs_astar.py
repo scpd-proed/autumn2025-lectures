@@ -326,7 +326,7 @@ def astar():
     text("A*: explore in order of PastCost(s) + h(s) for some **heuristic** h(s)")
     text("h(s) is an approximation of FutureCost(s)")
 
-    text("**A* algorithm** [Hart/Nilsson/Raphael 1968]: run UCS with modified costs:")
+    text("A* algorithm [Hart/Nilsson/Raphael 1968]: run UCS with modified costs:")
     text("Cost'(s, a) = Cost(s, a) + [h(Succ(s, a)) - h(s)]")
     text("Intuition: add a penalty for how much action takes us away from the end state")
 

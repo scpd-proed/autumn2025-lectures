@@ -127,7 +127,7 @@ def benefits_misuse_accidents():
     text("More often, AI has unintended consequences.")
     text("Neither the AI developer nor the user wants this to happen...")
     text("- Inequality: AI works better/worse for different groups (e.g., voice assistants don't work as well if you have an accent)")
-    text("- Sychopancy: reaffirming false beliefs, especially troubling for users with mental health issues, self-harm)")
+    text("- Sycophancy: reaffirming false beliefs, especially troubling for users with mental health issues, self-harm)")
     text("- Overreliance: people become overly dependent, can't think critically for themselves (e.g., in education)")
     text("- Cultural homogenization: AI reinforces existing biases and stereotypes")
     text("- Jobs: AI displaces some job functions (e.g., entry-level software engineers)")
