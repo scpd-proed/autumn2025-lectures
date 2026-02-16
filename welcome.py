@@ -1,8 +1,7 @@
 from edtrace import text, image, link, note
 
 def main():
-    text("## Welcome to CS221 (Artificial Intelligence: Principles and Techniques)")
-    image("images/course-staff.png", width=600)
+    text("## Welcome to XCS221 (Artificial Intelligence: Principles and Techniques)")
 
     what_is_ai()
     about_this_course()
@@ -87,9 +86,6 @@ def about_this_course():
     text("- Tensor-native: from deep learning to value iteration to Bayesian network inference")
     text("- Cut constraint satisfaction problems :(")
     text("- Deep dive into societal impact (e.g., copyright, supply chains, policy)")
-
-    text("All course policies, coursework, and schedule are online:")
-    link("https://stanford-cs221.github.io/autumn2025/")
 
 
 def what_is_this_program():
