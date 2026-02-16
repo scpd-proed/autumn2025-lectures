@@ -1,7 +1,7 @@
 [project]
-name = "autumn2025-lectures"
+name = "xcs221-lectures"
 version = "0.1.0"
-description = "Executable lectures for CS221 (Autumn 2025)"
+description = "Executable lectures for XCS221"
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
@@ -13,6 +13,7 @@ dependencies = [
     "matplotlib>=3.10.7",
     "scipy>=1.16.3",
     "tiktoken>=0.11.0",
+    "torch==2.2.2",
     "transformers>=4.57.0",
     "z3-solver>=4.15.4.0",
 ]
