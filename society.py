@@ -57,7 +57,7 @@ def why_care():
 
     text("3. Why not just develop the technology and let someone else worry about the consequences?")
     text("Here's an extreme example:")
-    image("images/wernher-von-braun.jpg", width=200), image("images/v2-rocket.png", width=200)
+    image("images/wernher-von-braun.jpg", width=200)
     text("- Wernher von Braun helped Hitler develop rockets during World War II")
     text("- He then camed to the US develop the space program")
     text("Song by Tom Lehrer:")
@@ -216,7 +216,7 @@ def alignment():
 
     text("### Pluralism")
     text("*Pluralism*: different people have different values "), link("https://arxiv.org/abs/2402.05070")
-    image("images/pluralism.png", width=400)
+    image("images/pluralism.png", width=400), text("image: Flaticon.com")
     text("- Models should represent the diversity of thought (within the Overton window)")
     text("- Models should be personalized (although not sycophantic, avoid echo chambers)")
 
