@@ -8,7 +8,6 @@ def main():
     turing_test()
 
     text("The history of AI is the story of three intellectual traditions:")
-    image("images/symbolic-neural-statistical.png", width=500)
 
     symbolic_ai()
     neural_ai()
@@ -36,6 +35,7 @@ def turing_test():
 def symbolic_ai():
     text("1956: John McCarthy organized workshop at Dartmouth College")
     image("images/dartmouth.jpg", width=100)
+    text("Huangavin, CC-BY-3.0")
     text("- Convened the leading thinkers of the day (Shannon, Minsky, etc.)")
     text("- Goal was to make a \"significant advance\" in 2 months")
     text("- Coined the term \"artificial intelligence\"")
@@ -71,7 +71,7 @@ def symbolic_ai():
     text("- Time-sharing: allow multiple people to use the same computer at once")
 
     text("Knowledge-based systems (70-80s)")
-    image("images/knowledge-key.jpg"),
+  
     text("Expert systems: elicit specific domain knowledge from experts in form of rules"),
     image("images/mycin-rule.png")
     text("Systems:")
@@ -153,7 +153,7 @@ def foundation_models():
 
     text("### Industrialization of AI")
     image("https://upload.wikimedia.org/wikipedia/commons/thumb/c/cc/Industrialisation.jpg/440px-Industrialisation.jpg", width=400)
-
+    text("Tharunbr77, CC-BY-SA-4.0")
     text("GPT-4 supposedly has 1.8T parameters. "), article_link("https://www.hpcwire.com/2024/03/19/the-generative-ai-future-is-now-nvidias-huang-says")
     text("GPT-4 supposedly cost $100M to train. "), article_link("https://www.wired.com/story/openai-ceo-sam-altman-the-age-of-giant-ai-models-is-already-over/")
     text("xAI builds cluster with 200,000 H100s to train Grok. "), article_link("https://www.tomshardware.com/pc-components/gpus/elon-musk-is-doubling-the-worlds-largest-ai-gpu-cluster-expanding-colossus-gpu-cluster-to-200-000-soon-has-floated-300-000-in-the-past")
