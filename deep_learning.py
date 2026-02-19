@@ -248,7 +248,7 @@ def nonlinear_motivation():
 
     text("A linear classifier in a higher-dimensional space")
     text("...leads to a non-linear classifier in the original space.")
-    video("images/svm-polynomial-kernel.mp4", width=400)
+
 
     text("Here's a simple algorithm:")
     text("1. Preprocess our data by applying `feature_map`.")
@@ -368,7 +368,7 @@ class MultiLayerPerceptron(nn.Module):
 def deep_neural_networks():
     text("Problem: a single MLP layer might not be expressive enough.")
     text("Solution: stack multiple MLP layers.")
-    image("images/more-layers.webp", width=400)
+
 
     text("Intuition: each layer learns more abstract features of the input.")
     image("images/feature-hierarchy.png", width=400)
