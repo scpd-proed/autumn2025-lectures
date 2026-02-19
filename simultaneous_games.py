@@ -7,7 +7,7 @@ def main():
     link("https://stanford-cs221.github.io/autumn2023/modules/module.html#include=games/simultaneous-games.js&mode=print6pp", title="[Autumn 2023 lecture]")
 
     text("Example: rock-paper-scissors")
-    image("images/rock-paper-scissors.jpg", width=200)
+
 
     text("Poll: can you still play optimally if you reveal your strategy?")
 
