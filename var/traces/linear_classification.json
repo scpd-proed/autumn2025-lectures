@@ -1,6 +1,6 @@
 {
   "files": {
-    "linear_classification.py": "import numpy as np\nfrom typing import Callable\nfrom dataclasses import dataclass\nfrom edtrace import text, link, plot, image\nfrom altair import Chart, Data\nfrom einops import reduce\nimport functools\nimport tiktoken\n\ndef main():\n    image(\"images/survey1.png\", width=800)\n\n    text(\"Last unit: linear regression\")\n    text(\"- Prediction task (regression): input \u2192 output: real number\")\n    text(\"- Hypothesis class: linear functions\")\n\n    text(\"This unit: linear classification\")\n    text(\"- Prediction task: input \u2192 output (class, label): one of K discrete choices\")\n    text(\"- Hypothesis class: (thresholded) linear functions\")\n\n    link(\"https://stanford-cs221.github.io/autumn2023/modules/module.html#include=machine-learning%2Flinear-classification.js&mode=print6pp\", title=\"[Autumn 2023 lecture]\")\n\n    text(\"Let's walk through the same steps as for linear regression and see what changes...\")\n\n    prediction_task()\n    machine_learning_problem()\n\n    hypothesis_class()\n    zero_one_loss_function()\n    zero_one_loss_optimization()\n    logistic_loss_function()\n    logistic_loss_optimization()\n\n    multiclass_classification()\n    representing_text()\n\n    text(\"Summary\")\n    text(\"- Linear classification: linear functions \u2192 one of K choices\")\n    text(\"- Zero-one loss: leads to zero-gradients almost everywhere\")\n    text(\"- Logistic loss: classifier outputs probabilities, leads to non-zero gradients\")\n    text(\"- Multiclass classification: one logit per class, convert to probabilities with softmax\")\n    text(\"- Representing text as tensors: tokenize + convert tokens to indices (one-hot vectors)\")\n\n    \ndef prediction_task():\n    text(\"Example task: image classification\")\n    text(\"- **Input**: an image; e.g.\")\n    image(\"https://upload.wikimedia.org/wikipedia/commons/thumb/b/b6/Felis_catus-cat_on_snow.jpg/1920px-Felis_catus-cat_on_snow.jpg\", width=200)\n    text(\"- **Output**: what kind of object it is (e.g., cat)\")\n\n    text(\"Example task: sentiment classification\")\n    text(\"- **Input**: a document\")\n    text(\"- **Output**: the sentiment of the document (e.g., positive)\")\n\n    text(\"What's the type of the **input**?\")\n    text(\"- Image: width x height x 3 (RGB) tensor\")\n    text(\"- Text: a string (hmm, not a tensor...we'll come back to this later)\")\n\n    text(\"What's the type of the **output**?\")\n    text(\"- Binary classification (two choices): usually {-1, 1}\")\n    text(\"- Multiclass classification (K choices): usually {0, 1, ..., K-1}\")\n\n    text(\"A **predictor** is a function that takes an input and produces a predicted output.\")\n    text(\"Here's an example predictor for binary classification:\")\n    def simple_binary_classifier(x: np.ndarray) -> int:  # @inspect x\n        logit = x[0] - x[1] - 1  # @inspect logit\n        if logit > 0:\n            predicted_y = 1  # @inspect predicted_y\n        else:\n            predicted_y = -1  # @inspect predicted_y\n        return predicted_y\n\n    text(\"Given an input, call the predictor on it:\")\n    x_a = np.array([1, 2])  # @inspect x_a\n    predicted_y_a = simple_binary_classifier(x_a)  # @inspect predicted_y_a\n    x_b = np.array([2, 0])  #  @inspect x_b\n    predicted_y_b = simple_binary_classifier(x_b)  # @inspect predicted_y_b\n\n    text(\"The points where logit = x[0] - x[1] - 1 = 0 is the **decision boundary**.\")\n    plot(make_plot(\"decision boundary\", \"x0\", \"x1\", lambda x0: x0 - 1, points=[example_to_point(Example(x=x_a, target_y=predicted_y_a)), example_to_point(Example(x=x_b, target_y=predicted_y_b))]))  # @stepover\n\n    text(\"But how do we get the predictor?\")\n\n\ndef machine_learning_problem():\n    text(\"The **training data** is a set of examples that demonstrate the task.\")\n    text(\"Each **example** consists of an (input x, target output y) pair.\")\n    training_data = get_training_data()  # @inspect training_data\n\n    data = [example_to_point(example) for example in training_data]  # @stepover\n    plot(make_plot(\"training data\", \"x0\", \"x1\", f=None, points=data))  # @stepover\n\n    text(\"A **learning algorithm** takes the training data and produces a predictor.\")\n\n    text(\"Key questions:\")\n    text(\"1. Which predictors are possible? **hypothesis class**\")\n    text(\"2. How good is a predictor? **loss function**\")\n    text(\"3. How do we compute the best predictor? **optimization algorithm**\")\n\n\ndef get_training_data():\n    return [\n        Example(x=np.array([1, 2]), target_y=-1),\n        Example(x=np.array([2, 0]), target_y=1),\n        Example(x=np.array([0, 0]), target_y=-1),\n    ]\n\n\n@dataclass(frozen=True)\nclass Example:\n    x: np.ndarray\n    target_y: float\n\n\ndef hypothesis_class():\n    text(\"Which predictors (classifiers) are possible?\")\n\n    text(\"As before, we will parameterize our predictors.\")\n    text(\"For linear classifiers, each set of parameters has a **weight vector** and a **bias**.\")\n    params = Parameters(weight=np.array([1, -1]), bias=-1)\n    x = np.array([1, 1])  #  @inspect x\n    predicted_y = binary_classifier(params, x)  # @inspect predicted_y\n    plot(make_plot(\"binary classifier\", \"x0\", \"x1\", lambda x0: x0 - 1, points=[example_to_point(Example(x=x, target_y=predicted_y))]))  # @stepover\n\n    text(\"Here's another predictor:\")  # @clear params x predicted_y\n    params = Parameters(weight=np.array([1, -1]), bias=1)\n    x = np.array([1, 1])  #  @inspect x\n    predicted_y = binary_classifier(params, x)  # @inspect predicted_y\n    plot(make_plot(\"binary classifier\", \"x0\", \"x1\", lambda x0: x0 + 1, points=[example_to_point(Example(x=x, target_y=predicted_y))]))  # @stepover\n\n    text(\"The **hypothesis class** is the set of all predictors you can get by choosing parameters (weight, bias).\")\n    text(\"The decision boundaries are any \\\"straight-line cuts\\\" of the input space.\")\n\n\n@dataclass(frozen=True)\nclass Parameters:\n    weight: np.ndarray\n    bias: float\n\n\ndef binary_classifier(params: Parameters, x: np.ndarray) -> float:  # @inspect params x\n    \"\"\"Applies the linear predictor given by `params` to input `x`.\"\"\"\n    logit = params.weight @ x + params.bias  # @inspect logit\n    if logit > 0:\n        predicted_y = 1  # @inspect predicted_y\n    else:\n        predicted_y = -1  # @inspect predicted_y\n    return predicted_y\n\n\ndef zero_one_loss_function():\n    text(\"The next design decision is how to judge each of the infinitely many possible predictors.\")\n\n    text(\"Let's consider a predictor:\")\n    params = Parameters(weight=np.array([1, -1]), bias=-1)  # @inspect params\n\n    text(\"Recall the training data:\")\n    training_data = get_training_data()  # @inspect training_data @stepover\n    \n    text(\"How well does `params` fit `training_data`?\")\n    text(\"We define a loss function that measures how unhappy one point is based on params.\")\n\n    text(\"Recall that for regression, we used the squared loss.\")\n    text(\"Intuition: how far away the prediction is from the target.\")\n    loss = squared_loss(training_data[0], params)  # @inspect loss\n    plot(make_plot(\"squared loss\", \"residual\", \"loss\", lambda residual: residual ** 2))  # @stepover\n    text(\"This loss is okay (is 0 when predicted = target), but we're classifying, not precise values...\")\n\n    text(\"For binary classification, we use the zero-one loss.\")  # @clear loss\n    text(\"Intuition: whether the prediction has the same sign as the target.\")\n    loss = zero_one_loss(Example(x=np.array([2, 0]), target_y=1), params)  # @inspect loss\n    loss = zero_one_loss(Example(x=np.array([0, -2]), target_y=-1), params)  # @inspect loss\n    text(\"We can rewrite the zero-one loss in terms of the margin.\")\n    loss = zero_one_loss_inline(Example(x=np.array([2, 0]), target_y=1), params)  # @inspect loss\n    plot(make_plot(\"zero-one loss\", \"margin\", \"loss\", lambda margin: int(margin <= 0)))  # @stepover\n\n    text(\"The training loss is the average of the per-example losses of the training examples.\")  # @clear loss\n    params = Parameters(weight=np.array([0, 0]), bias=-1)  # @inspect params\n    train_loss = train_zero_one_loss(params, training_data)  # @inspect train_loss\n\n    text(\"Summary:\")\n    text(\"- Logit: the raw score from the linear model (sign is prediction, magnitude is confidence)\")\n    text(\"- Margin (logit * target): sign is whether the prediction is correct or not\")\n    text(\"- Zero-one loss: 1 if wrong, 0 if right\")\n    text(\"- Train loss: average over training examples (error rate)\")\n\n\ndef squared_loss(example: Example, params: Parameters) -> float:  # @inspect example params\n    predicted_y = example.x @ params.weight + params.bias  # @inspect predicted_y\n    residual = predicted_y - example.target_y  # @inspect residual\n    loss = residual ** 2  # @inspect loss\n    return loss\n\n\ndef zero_one_loss(example: Example, params: Parameters) -> float:  # @inspect example params\n    predicted_y = binary_classifier(params, example.x)  # @inspect predicted_y\n    loss = int(predicted_y != example.target_y)  # Whether the prediction was wrong @inspect loss\n    return loss\n\n\ndef zero_one_loss_inline(example: Example, params: Parameters) -> float:  # @inspect example params\n    # logit: sign is prediction, magnitude is how confident we are \n    logit = example.x @ params.weight + params.bias  # @inspect logit\n    # margin: sign measures correct (+) or not (-)\n    margin = logit * example.target_y  # @inspect margin\n    loss = int(margin <= 0)  # Whether the prediction was wrong @inspect loss\n    return loss\n\n\ndef train_zero_one_loss(params: Parameters, training_data: list[Example]) -> float:  # @inspect params training_data\n    losses = [zero_one_loss_inline(example, params) for example in training_data]  # @inspect losses @stepover\n    train_loss = np.mean(losses)  # @inspect train_loss\n    return train_loss\n\n\ndef zero_one_loss_optimization():\n    text(\"Recall that for every set of parameters `params`, we can compute the training loss `train_loss`.\")\n\n    text(\"Recall in linear regression we optimized the parameters using gradient descent.\")\n    text(\"So let's do the same thing here.\")\n\n    params = Parameters(weight=np.array([1, 1]), bias=0)  # @inspect params\n    training_data = get_training_data()  # @inspect training_data @stepover\n    train_loss = train_zero_one_loss(params, training_data)  # @inspect train_loss\n\n    text(\"We want to find the parameters that yield the lowest training loss.\")\n    text(\"This is an optimization problem.\")\n\n    text(\"Let's take the gradient of the training loss.\")\n    grad = gradient_zero_one_loss(training_data[0], params)  # @inspect grad\n    text(\"We have a problem: the gradient is zero everywhere!\")\n    plot(make_plot(\"zero-one loss\", \"margin\", \"loss\", lambda margin: int(margin <= 0)))  # @stepover\n    text(\"So gradient descent won't update the parameters at all!\")\n    text(\"Intuition: if example is wrong, moving parameters a tiny bit won't make it right, so give up.\")\n    text(\"So what do we do?\")\n\n\ndef gradient_zero_one_loss(example: Example, params: Parameters) -> Parameters:  # @inspect example params\n    logit = example.x @ params.weight + params.bias  # @inspect logit\n    margin = logit * example.target_y  # @inspect margin\n    # Zero everywhere except when margin = 0, where it's undefined\n    return Parameters(weight=np.zeros_like(params.weight), bias=0)\n\n\ndef logistic_function():\n    text(\"A logit is a number between -\u221e and +\u221e.\")\n    text(\"We want to convert a logit into a probability (must be between 0 and 1).\")\n    text(\"There are many functions that do this, but the **logistic function** is a standard choice.\")\n\n    plot(make_plot(\"logistic function\", \"logit\", \"prob\", logistic, xrange=(-10, 10)))  # @stepover\n\n    logit = 0  # @inspect logit\n    prob = logistic(logit)  # @inspect prob\n    logit = 1  # @inspect logit\n    prob = logistic(logit)  # @inspect prob @stepover\n    logit = 8  # @inspect logit\n    prob = logistic(logit)  # @inspect prob @stepover\n    logit = -1  # @inspect logit\n    prob = logistic(logit)  # @inspect prob @stepover\n    logit = -8  # @inspect logit\n    prob = logistic(logit)  # @inspect prob @stepover\n\n    text(\"Another interpretation: log odds\") # @clear logit prob\n    prob = 0.2  # @inspect prob\n    odds = prob / (1 - prob)  # @inspect odds\n    logit = np.log(odds)  # @inspect logit\n    prob2 = logistic(logit)  # @inspect prob2 @stepover\n    assert prob == prob2  # @clear prob odds logit prob2\n\n    text(\"Properties\")\n    text(\"- As logit \u2192 -\u221e, prob \u2192 0\")\n    text(\"- As logit \u2192 +\u221e, prob \u2192 1\")\n    text(\"- As logit \u2192 0, prob \u2192 0.5\")\n\n    prob1 = logistic(logit=3)  # @inspect prob1 @stepover\n    prob2 = logistic(logit=-3)  # @inspect prob2 @stepover\n    assert np.allclose(prob1 + prob2, 1)\n\n    text(\"The derivative of the logistic function is quite simple and elegant\")\n    grad_prob = gradient_logistic(logit=3)  # @inspect grad_prob\n    text(\"As |logit| \u2192 -\u221e, grad_prob \u2192 0\")\n    plot(make_plot(\"derivative of logistic function\", \"logit\", \"grad_prob\", gradient_logistic, xrange=(-10, 10))) # @stepover\n\n\ndef logistic(logit: float) -> float:  # @inspect logit\n    prob = 1 / (1 + np.exp(-logit))  # @inspect prob\n    return prob\n\n\ndef gradient_logistic(logit: float) -> float:\n    prob = logistic(logit)  # @inspect prob @stepover\n    grad = prob * (1 - prob)  # @inspect grad\n    return grad\n\n\ndef logistic_loss_function():\n    text(\"To solve the zero gradient problem, we have to rethink the loss function\")\n    text(\"...and actually, even what our classifer outputs.\")\n\n    text(\"Let's take a set of parameters and an example.\")\n    params = Parameters(weight=np.array([1, -1]), bias=1)  # @inspect params\n    example = Example(x=np.array([2, 0]), target_y=1)  # @inspect example\n\n    text(\"So far, our predictor turns a logit into a single prediction\")    \n    predicted_y = binary_classifier(params, example.x)  # @inspect predicted_y @stepover\n    text(\"Thresholding is a very discrete operation...\")\n    \n    text(\"Instead, let us make things continuous by having a classifier output a probability distribution (continuous) over labels.\")  # @clear predicted_y\n    text(\"The key to doing this will be the **logistic** function.\")\n    logistic_function()\n    text(\"The logistic function was used in statistics in **logistic regression** [Berkson, 1944].\")\n\n    text(\"Now we can compute the probability of y\")\n    logit = example.x @ params.weight + params.bias  # @inspect logit\n    prob_pos = logistic(logit)  # p(y=1|x) @inspect prob_pos @stepover\n    prob_neg = logistic(-logit)  # p(y=-1|x) @inspect prob_neg @stepover\n    margin = logit * example.target_y  # @inspect margin\n    prob_target = logistic(margin)  # p(y=target_y|x) @inspect prob_target @stepover\n\n    text(\"**Maximum likelihood** principle: maximize the log probability of the training targets\")\n\n    text(\"If we have multiple examples, we'd multiply the probabilities: p(y1|x1) * p(y2|x2)\")\n    text(\"Equivalent to summing the log probabilities: log p(y1|x1) + log p(y2|x2)\")\n    log_prob_target = np.log(prob_target)  # @inspect log_prob_target\n\n    text(\"To turn this into a loss, just negate it (maximize likelihood = minimize loss)\")\n    loss = -log_prob_target  # @inspect loss\n\n    text(\"Let's package it up into a function:\")  # @clear logit prob_pos prob_neg prob_target log_prob_target loss\n    loss = logistic_loss(example, params)  # @inspect loss\n\n    text(\"Recall the zero-one loss, which has a sharp cliff at 0.\")\n    data = make_plot(\"zero-one loss\", \"margin\", \"loss\", lambda margin: int(margin <= 0))  # @stepover\n    plot(data)\n\n    text(\"The logistic loss is smooth, but goes to 0 when the margin grows.\")\n    data = make_plot(\"logistic loss\", \"margin\", \"loss\", lambda margin: -np.log(logistic(margin)))  # @stepover\n    plot(data)\n\n    text(\"As before, the training loss is the average of the per-example losses.\")\n    training_data = get_training_data()  # @inspect training_data @clear example params loss @stepover\n    train_loss = train_logistic_loss(params, training_data)  # @inspect train_loss\n\n\ndef logistic_loss(example: Example, params: Parameters) -> float:  # @inspect example params\n    # logit: sign is prediction, magnitude is how confident we are \n    logit = example.x @ params.weight + params.bias  # @inspect logit\n    # margin: sign measures correct (+) or not (-)\n    margin = logit * example.target_y  # @inspect margin\n    prob_target = logistic(margin)  # @inspect prob_target @stepover\n    loss = -np.log(prob_target)  # @inspect loss\n    return loss\n\n\ndef train_logistic_loss(params: Parameters, training_data: list[Example]) -> float:  # @inspect params training_data\n    losses = [logistic_loss(example, params) for example in training_data]  # @inspect losses @stepover\n    train_loss = np.mean(losses)  # @inspect train_loss\n    return train_loss\n\n\ndef logistic_loss_optimization():\n    text(\"Now we are ready to optimize the logistic loss.\")\n\n    text(\"Let's compute the gradient of the loss for one example.\")\n    params = Parameters(weight=np.array([0, 0]), bias=0)  # @inspect params\n    example = Example(x=np.array([2, 0]), target_y=1)  # @inspect example\n    grad = gradient_logistic_loss(example, params)  # @inspect grad\n\n    text(\"Now the gradient of the training loss is the average of the gradients of the examples.\")\n    training_data = get_training_data()  # @inspect training_data @clear example grad @stepover\n    grad = gradient_train_logistic_loss(params, training_data)  # @inspect grad\n\n    text(\"Now we can do gradient descent, which repeatedly updates the parameters in the direction of the gradient.\")\n    gradient_descent()\n\n\ndef gradient_logistic_loss(example: Example, params: Parameters) -> Parameters:  # @inspect example params\n    logit = example.x @ params.weight + params.bias  # @inspect logit\n    margin = logit * example.target_y  # @inspect margin\n    loss = -np.log(logistic(margin))  # @inspect loss @stepover\n    grad_logit = -logistic(-margin)  # @inspect grad_logit @stepover\n    grad_weight = example.target_y * example.x * grad_logit  # @inspect grad_weight\n    grad_bias = example.target_y * grad_logit  # @inspect grad_bias\n    return Parameters(weight=grad_weight, bias=grad_bias)\n\n\ndef gradient_train_logistic_loss(params: Parameters, training_data: list[Example]) -> Parameters:  # @inspect params training_data\n    grads = [gradient_logistic_loss(example, params) for example in training_data]  # @inspect grads @stepover\n    mean_weight = np.mean([grad.weight for grad in grads], axis=0)  # @inspect mean_weight\n    mean_bias = np.mean([grad.bias for grad in grads])  # @inspect mean_bias\n    return Parameters(weight=mean_weight, bias=mean_bias)\n\n\ndef gradient_descent():\n    # Initialization\n    training_data = get_training_data()  # @stepover\n    params = Parameters(weight=np.array([0, 0]), bias=0)  # @inspect params\n    learning_rate = 1\n\n    losses = []\n    for step in range(20):  # @inspect step\n        train_loss = train_logistic_loss(params, training_data)  # @inspect train_loss @stepover\n        grad = gradient_train_logistic_loss(params, training_data)  # @inspect grad @stepover\n        params = Parameters(  # @inspect params\n            weight=params.weight - learning_rate * grad.weight,\n            bias=params.bias - learning_rate * grad.bias,\n        )\n        losses.append(train_loss)\n\n    # Learning curve\n    plot(Chart(Data(values=[{\"step\": i, \"loss\": loss} for i, loss in enumerate(losses)])).mark_line().encode(x=\"step:Q\", y=\"loss:Q\").to_dict())\n\n    text(\"Plot the decision boundary:\")\n    points = [example_to_point(example) for example in training_data]  # @stepover\n    plot(make_plot(\"decision boundary\", \"x0\", \"x1\", lambda x0: -(params.weight[0] * x0 + params.bias) / params.weight[1], points=points))  # @stepover\n\n\ndef multiclass_classification():\n    text(\"Binary classification (output y \u2208 {-1, 1})\")\n    text(\"Multiclass classification (output y \u2208 {0, 1, ..., K-1})\")\n\n    text(\"For binary classification, we compute a single logit for each input.\")\n    text(\"Sign of logit is the predicted class\")\n    x = np.array([2, 0])  # @inspect x\n    params = Parameters(weight=np.array([1, -1]), bias=-1)  # @inspect params\n    logit = x @ params.weight + params.bias  # @inspect logit\n    prob_pos = logistic(logit)  # @inspect prob_pos @stepover\n    prob_neg = 1 - prob_pos  # @inspect prob_neg\n\n    text(\"For multiclass classification\")  # @clear prob_pos prob_neg x params logit\n    text(\"- Define a weight vector for each class\")\n    text(\"- Compute a logit for each class\")\n    text(\"- Predict a distribution over classes\")\n    params = Parameters(weight=np.array([[1, -1], [1, -1], [0, 2]]), bias=np.array([1, 1, 0]))  # @inspect params\n    x = np.array([2, 0])  # @inspect x\n    logits = params.weight @ x + params.bias  # @inspect logits\n    text(\"How do I turn logits into probabilities?\")\n    introduce_softmax()\n    probs = softmax(logits)  # @inspect probs\n\n    text(\"Now let us define the cross entropy loss.\")\n    introduce_cross_entropy()\n\n    text(\"Now we can compute the cross entropy loss for an example:\")\n    example = Example(x=x, target_y=0)  # @inspect example\n    cross_entropy = cross_entropy_loss(params, example)  # @inspect cross_entropy\n    text(\"Given this loss, we can perform gradient descent to optimize the parameters.\")\n\n    text(\"Summary\")\n    text(\"- Softmax: turn logits into probabilities\")\n    text(\"- Cross entropy: measures difference between target distribution and predicted distribution\")\n    text(\"- Cross entropy loss: generalizes logistic loss, predicted probability of target class\")\n\n\ndef introduce_softmax():\n    text(\"Recall: the logistic function maps (-\u221e, +\u221e) to (0, 1)\")\n\n    text(\"The softmax function generalizes this to multiple classes.\")\n\n    logits = np.array([1, -1, 0])  # @inspect logits\n    probs = softmax(logits)  # @inspect softmax_logits\n\n    text(\"Shifting up logits doesn't change the relative probabilities\")\n    logits1 = np.array([1, -1, 0])  # @inspect logits1\n    probs1 = softmax(logits1)  # @inspect probs1 @stepover\n    logits2 = np.array(logits1 + 2)  # @inspect logits2\n    probs2 = softmax(logits2)  # @inspect probs2 @stepover\n    assert np.allclose(probs1, probs2)\n\n\ndef softmax(logits: np.ndarray) -> np.ndarray:  # @inspect logits\n    exp_logits = np.exp(logits)  # @inspect exp_logits\n    probs = exp_logits / np.sum(exp_logits)  # @inspect probs\n    return probs\n\n\ndef cross_entropy_loss(params: Parameters, example: Example) -> float:  # @inspect params example\n    num_classes = len(params.weight)  # @inspect num_classes\n    logits = [example.x @ params.weight[y] + params.bias[y] for y in range(num_classes)]  # @inspect logits\n    probs = softmax(logits)  # @inspect probs\n    cross_entropy = -np.log(probs[example.target_y])  # @inspect cross_entropy\n    return cross_entropy\n\n\ndef introduce_cross_entropy():\n    text(\"Cross entropy: measures the difference between a target distribution and a predicted distribution\")\n    target = np.array([0.5, 0.2, 0.3])  # @inspect target\n    predicted = np.array([0.1, 0.5, 0.4])  # @inspect predicted\n\n    text(\"Penalized when target puts high probability on outcome, and predicted puts low probability on it.\")\n    terms = target * -np.log(predicted)  # @inspect terms\n    cross_entropy = np.sum(terms)  # @inspect cross_entropy\n\n    text(\"Cross entropy is minimized when target = predicted\")\n    text(\"... and the cross entropy is entropy of target (or predicted).\")\n\n    text(\"Special case: target is a single label (represented as a one-hot vector)\") # @clear target predicted terms cross_entropy\n    target = np.array([0, 1, 0])  # @inspect target\n    predicted = np.array([0.1, 0.5, 0.4])  # @inspect predicted\n    terms = target * -np.log(predicted)  # @inspect terms\n    cross_entropy = np.sum(terms)  # @inspect cross_entropy\n    text(\"This is the same as the negative log probability of the target class.\")\n\n\ndef representing_text():\n    text(\"Prediction tasks involve text(strings), but machine learning operates on tensors.\")\n\n    string = \"the cat in the hat\"\n\n    text(\"How do we represent a string as a tensor?\")\n    text(\"1. Tokenization: convert a string into a sequence of integers.\")\n    text(\"2. Represent each integer as a one-hot vector.\")\n\n    vocab, indices = tokenization()  # @inspect indices\n\n    text(\"### Interpretation\")\n    text(\"Represent each index as a one-hot vector.\")\n    index = indices[4]  # @inspect index\n    vector = np.eye(len(vocab))[index]  # @inspect vector @stepover\n\n    text(\"So the string is represented as a sequence of vectors, or a matrix:\")\n    matrix = np.eye(len(vocab))[indices]  # @inspect matrix @stepover @clear index vector\n\n    text(\"### Operations\")\n    text(\"In practice, we store the indices and not the one-hot vectors to save memory.\")\n    text(\"We can operate directly using the indices.\")\n    text(\"Suppose we want to take the dot product of each position with `w`.\")\n    np.random.seed(1)\n    w = np.random.randn(len(vocab))  # @inspect w @stepover\n\n    # Use a matrix-vector product\n    y = matrix @ w  # @inspect y\n\n    # Equivalently, index into the weight vectors\n    y_index = w[indices]  # @inspect y_index\n\n    text(\"### Bag of words representation\")\n    text(\"Represent each token as a (one-hot) vector.\")\n    text(\"Represent each text as the average of the token vectors.\")\n    bow = reduce(matrix, \"pos vocab -> vocab\", \"mean\")  # @inspect bow\n    text(\"Then we can operate on this fixed-dimensional vector.\")\n    y_bow = bow @ w  # @inspect y_bow\n\n    text(\"Equivalently, we can operate directly on the indices:\")\n    y_bow_index = np.mean(w[indices])  # @inspect y_bow_index\n    \n    text(\"Bag of words:\")\n    text(\"- Pro: doesn't depend on the length of the text\")\n    text(\"- Con: doesn't pay attention to word order (*dog bites man* = *man bites dog*)\")\n\n    text(\"Summary\")\n    text(\"- Problem: convert strings to tensors for machine learning\")\n    text(\"- Solution: tokenization + one-hot encoding\")\n    text(\"- Tokenization: split strings into words and build up a vocabulary (string \u2194 index)\")\n    text(\"- Mathematically work with one-hot vectors; in code, work with indices\")\n\n\ndef tokenization():\n    string = \"the cat in the hat\"\n\n    # Simple tokenization\n    text(\"Split a string by space into words and convert them into integers.\")\n    vocab = Vocabulary()  # @inspect vocab\n    words = string.split()  # @inspect words\n    indices = [vocab.get_index(word) for word in words]  # @inspect indices vocab\n\n    # Fancier tokenization\n    text(\"Language models use more sophisticated tokenizers (Byte-Pair Encoding) \"), link(\"https://arxiv.org/pdf/1508.07909\")\n    text(\"To get a feel for how tokenizers work, play with this \"), link(title=\"interactive site\", url=\"https://tiktokenizer.vercel.app/?encoder=gpt2\")\n    tokenzier = tiktoken.get_encoding(\"gpt2\")\n    gpt2_indices = tokenzier.encode(string)  # @inspect gpt2_indices\n\n    return vocab, indices\n\n\nclass Vocabulary:\n    \"\"\"Maps strings to integers.\"\"\"\n    def __init__(self):\n        self.index_to_string: list[str] = []\n        self.string_to_index: dict[str, int] = {}\n\n    def get_index(self, string: str) -> int:  # @inspect string\n        index = self.string_to_index.get(string)  # @inspect index\n        if index is None:  # New string\n            index = len(self.index_to_string)  # @inspect index\n            self.index_to_string.append(string)\n            self.string_to_index[string] = index\n        return index\n\n    def get_string(self, index: int) -> str:\n        return self.index_to_string[index]\n\n    def __len__(self):\n        return len(self.index_to_string)\n\n    def asdict(self):\n        return {\n            \"index_to_string\": self.index_to_string,\n            \"string_to_index\": self.string_to_index,\n        }\n\n\ndef example_to_point(example: Example) -> dict:\n    return {\"x0\": example.x[0], \"x1\": example.x[1], \"color\": \"red\" if example.target_y == 1 else \"blue\"}\n\n\ndef make_plot(title: str,\n              xlabel: str,\n              ylabel: str,\n              f: Callable[[float], float] | None,\n              xrange: tuple[float, float] = (-3, 3),\n              points: list[dict] | None = None) -> dict:\n    to_show = []\n\n    if f is not None:\n        values = [{xlabel: x, ylabel: f(x)} for x in np.linspace(xrange[0], xrange[1], 30)]\n        line = Chart(Data(values=values)).properties(title=title).mark_line().encode(x=f\"{xlabel}:Q\", y=f\"{ylabel}:Q\")\n        to_show.append(line)\n\n    if points is not None:\n        points = Chart(Data(values=points)).mark_point().encode(x=f\"{xlabel}:Q\", y=f\"{ylabel}:Q\", color=\"color:N\")\n        to_show.append(points)\n\n    chart = functools.reduce(lambda c1, c2: c1 + c2, to_show)\n    return chart.to_dict()\n\n\nif __name__ == \"__main__\":\n    main()\n"
+    "linear_classification.py": "import numpy as np\nfrom typing import Callable\nfrom dataclasses import dataclass\nfrom edtrace import text, link, plot, image\nfrom altair import Chart, Data\nfrom einops import reduce\nimport functools\nimport tiktoken\n\ndef main():\n\n\n    text(\"Last unit: linear regression\")\n    text(\"- Prediction task (regression): input \u2192 output: real number\")\n    text(\"- Hypothesis class: linear functions\")\n\n    text(\"This unit: linear classification\")\n    text(\"- Prediction task: input \u2192 output (class, label): one of K discrete choices\")\n    text(\"- Hypothesis class: (thresholded) linear functions\")\n\n    link(\"https://stanford-cs221.github.io/autumn2023/modules/module.html#include=machine-learning%2Flinear-classification.js&mode=print6pp\", title=\"[Autumn 2023 lecture]\")\n\n    text(\"Let's walk through the same steps as for linear regression and see what changes...\")\n\n    prediction_task()\n    machine_learning_problem()\n\n    hypothesis_class()\n    zero_one_loss_function()\n    zero_one_loss_optimization()\n    logistic_loss_function()\n    logistic_loss_optimization()\n\n    multiclass_classification()\n    representing_text()\n\n    text(\"Summary\")\n    text(\"- Linear classification: linear functions \u2192 one of K choices\")\n    text(\"- Zero-one loss: leads to zero-gradients almost everywhere\")\n    text(\"- Logistic loss: classifier outputs probabilities, leads to non-zero gradients\")\n    text(\"- Multiclass classification: one logit per class, convert to probabilities with softmax\")\n    text(\"- Representing text as tensors: tokenize + convert tokens to indices (one-hot vectors)\")\n\n    \ndef prediction_task():\n    text(\"Example task: image classification\")\n    text(\"- **Input**: an image; e.g. (Von.grzanka, CC-BY-SA-3.0)\")\n    image(\"https://upload.wikimedia.org/wikipedia/commons/thumb/b/b6/Felis_catus-cat_on_snow.jpg/1920px-Felis_catus-cat_on_snow.jpg\", width=200)\n    text(\"- **Output**: what kind of object it is (e.g., cat)\")\n\n    text(\"Example task: sentiment classification\")\n    text(\"- **Input**: a document\")\n    text(\"- **Output**: the sentiment of the document (e.g., positive)\")\n\n    text(\"What's the type of the **input**?\")\n    text(\"- Image: width x height x 3 (RGB) tensor\")\n    text(\"- Text: a string (hmm, not a tensor...we'll come back to this later)\")\n\n    text(\"What's the type of the **output**?\")\n    text(\"- Binary classification (two choices): usually {-1, 1}\")\n    text(\"- Multiclass classification (K choices): usually {0, 1, ..., K-1}\")\n\n    text(\"A **predictor** is a function that takes an input and produces a predicted output.\")\n    text(\"Here's an example predictor for binary classification:\")\n    def simple_binary_classifier(x: np.ndarray) -> int:  # @inspect x\n        logit = x[0] - x[1] - 1  # @inspect logit\n        if logit > 0:\n            predicted_y = 1  # @inspect predicted_y\n        else:\n            predicted_y = -1  # @inspect predicted_y\n        return predicted_y\n\n    text(\"Given an input, call the predictor on it:\")\n    x_a = np.array([1, 2])  # @inspect x_a\n    predicted_y_a = simple_binary_classifier(x_a)  # @inspect predicted_y_a\n    x_b = np.array([2, 0])  #  @inspect x_b\n    predicted_y_b = simple_binary_classifier(x_b)  # @inspect predicted_y_b\n\n    text(\"The points where logit = x[0] - x[1] - 1 = 0 is the **decision boundary**.\")\n    plot(make_plot(\"decision boundary\", \"x0\", \"x1\", lambda x0: x0 - 1, points=[example_to_point(Example(x=x_a, target_y=predicted_y_a)), example_to_point(Example(x=x_b, target_y=predicted_y_b))]))  # @stepover\n\n    text(\"But how do we get the predictor?\")\n\n\ndef machine_learning_problem():\n    text(\"The **training data** is a set of examples that demonstrate the task.\")\n    text(\"Each **example** consists of an (input x, target output y) pair.\")\n    training_data = get_training_data()  # @inspect training_data\n\n    data = [example_to_point(example) for example in training_data]  # @stepover\n    plot(make_plot(\"training data\", \"x0\", \"x1\", f=None, points=data))  # @stepover\n\n    text(\"A **learning algorithm** takes the training data and produces a predictor.\")\n\n    text(\"Key questions:\")\n    text(\"1. Which predictors are possible? **hypothesis class**\")\n    text(\"2. How good is a predictor? **loss function**\")\n    text(\"3. How do we compute the best predictor? **optimization algorithm**\")\n\n\ndef get_training_data():\n    return [\n        Example(x=np.array([1, 2]), target_y=-1),\n        Example(x=np.array([2, 0]), target_y=1),\n        Example(x=np.array([0, 0]), target_y=-1),\n    ]\n\n\n@dataclass(frozen=True)\nclass Example:\n    x: np.ndarray\n    target_y: float\n\n\ndef hypothesis_class():\n    text(\"Which predictors (classifiers) are possible?\")\n\n    text(\"As before, we will parameterize our predictors.\")\n    text(\"For linear classifiers, each set of parameters has a **weight vector** and a **bias**.\")\n    params = Parameters(weight=np.array([1, -1]), bias=-1)\n    x = np.array([1, 1])  #  @inspect x\n    predicted_y = binary_classifier(params, x)  # @inspect predicted_y\n    plot(make_plot(\"binary classifier\", \"x0\", \"x1\", lambda x0: x0 - 1, points=[example_to_point(Example(x=x, target_y=predicted_y))]))  # @stepover\n\n    text(\"Here's another predictor:\")  # @clear params x predicted_y\n    params = Parameters(weight=np.array([1, -1]), bias=1)\n    x = np.array([1, 1])  #  @inspect x\n    predicted_y = binary_classifier(params, x)  # @inspect predicted_y\n    plot(make_plot(\"binary classifier\", \"x0\", \"x1\", lambda x0: x0 + 1, points=[example_to_point(Example(x=x, target_y=predicted_y))]))  # @stepover\n\n    text(\"The **hypothesis class** is the set of all predictors you can get by choosing parameters (weight, bias).\")\n    text(\"The decision boundaries are any \\\"straight-line cuts\\\" of the input space.\")\n\n\n@dataclass(frozen=True)\nclass Parameters:\n    weight: np.ndarray\n    bias: float\n\n\ndef binary_classifier(params: Parameters, x: np.ndarray) -> float:  # @inspect params x\n    \"\"\"Applies the linear predictor given by `params` to input `x`.\"\"\"\n    logit = params.weight @ x + params.bias  # @inspect logit\n    if logit > 0:\n        predicted_y = 1  # @inspect predicted_y\n    else:\n        predicted_y = -1  # @inspect predicted_y\n    return predicted_y\n\n\ndef zero_one_loss_function():\n    text(\"The next design decision is how to judge each of the infinitely many possible predictors.\")\n\n    text(\"Let's consider a predictor:\")\n    params = Parameters(weight=np.array([1, -1]), bias=-1)  # @inspect params\n\n    text(\"Recall the training data:\")\n    training_data = get_training_data()  # @inspect training_data @stepover\n    \n    text(\"How well does `params` fit `training_data`?\")\n    text(\"We define a loss function that measures how unhappy one point is based on params.\")\n\n    text(\"Recall that for regression, we used the squared loss.\")\n    text(\"Intuition: how far away the prediction is from the target.\")\n    loss = squared_loss(training_data[0], params)  # @inspect loss\n    plot(make_plot(\"squared loss\", \"residual\", \"loss\", lambda residual: residual ** 2))  # @stepover\n    text(\"This loss is okay (is 0 when predicted = target), but we're classifying, not precise values...\")\n\n    text(\"For binary classification, we use the zero-one loss.\")  # @clear loss\n    text(\"Intuition: whether the prediction has the same sign as the target.\")\n    loss = zero_one_loss(Example(x=np.array([2, 0]), target_y=1), params)  # @inspect loss\n    loss = zero_one_loss(Example(x=np.array([0, -2]), target_y=-1), params)  # @inspect loss\n    text(\"We can rewrite the zero-one loss in terms of the margin.\")\n    loss = zero_one_loss_inline(Example(x=np.array([2, 0]), target_y=1), params)  # @inspect loss\n    plot(make_plot(\"zero-one loss\", \"margin\", \"loss\", lambda margin: int(margin <= 0)))  # @stepover\n\n    text(\"The training loss is the average of the per-example losses of the training examples.\")  # @clear loss\n    params = Parameters(weight=np.array([0, 0]), bias=-1)  # @inspect params\n    train_loss = train_zero_one_loss(params, training_data)  # @inspect train_loss\n\n    text(\"Summary:\")\n    text(\"- Logit: the raw score from the linear model (sign is prediction, magnitude is confidence)\")\n    text(\"- Margin (logit * target): sign is whether the prediction is correct or not\")\n    text(\"- Zero-one loss: 1 if wrong, 0 if right\")\n    text(\"- Train loss: average over training examples (error rate)\")\n\n\ndef squared_loss(example: Example, params: Parameters) -> float:  # @inspect example params\n    predicted_y = example.x @ params.weight + params.bias  # @inspect predicted_y\n    residual = predicted_y - example.target_y  # @inspect residual\n    loss = residual ** 2  # @inspect loss\n    return loss\n\n\ndef zero_one_loss(example: Example, params: Parameters) -> float:  # @inspect example params\n    predicted_y = binary_classifier(params, example.x)  # @inspect predicted_y\n    loss = int(predicted_y != example.target_y)  # Whether the prediction was wrong @inspect loss\n    return loss\n\n\ndef zero_one_loss_inline(example: Example, params: Parameters) -> float:  # @inspect example params\n    # logit: sign is prediction, magnitude is how confident we are \n    logit = example.x @ params.weight + params.bias  # @inspect logit\n    # margin: sign measures correct (+) or not (-)\n    margin = logit * example.target_y  # @inspect margin\n    loss = int(margin <= 0)  # Whether the prediction was wrong @inspect loss\n    return loss\n\n\ndef train_zero_one_loss(params: Parameters, training_data: list[Example]) -> float:  # @inspect params training_data\n    losses = [zero_one_loss_inline(example, params) for example in training_data]  # @inspect losses @stepover\n    train_loss = np.mean(losses)  # @inspect train_loss\n    return train_loss\n\n\ndef zero_one_loss_optimization():\n    text(\"Recall that for every set of parameters `params`, we can compute the training loss `train_loss`.\")\n\n    text(\"Recall in linear regression we optimized the parameters using gradient descent.\")\n    text(\"So let's do the same thing here.\")\n\n    params = Parameters(weight=np.array([1, 1]), bias=0)  # @inspect params\n    training_data = get_training_data()  # @inspect training_data @stepover\n    train_loss = train_zero_one_loss(params, training_data)  # @inspect train_loss\n\n    text(\"We want to find the parameters that yield the lowest training loss.\")\n    text(\"This is an optimization problem.\")\n\n    text(\"Let's take the gradient of the training loss.\")\n    grad = gradient_zero_one_loss(training_data[0], params)  # @inspect grad\n    text(\"We have a problem: the gradient is zero everywhere!\")\n    plot(make_plot(\"zero-one loss\", \"margin\", \"loss\", lambda margin: int(margin <= 0)))  # @stepover\n    text(\"So gradient descent won't update the parameters at all!\")\n    text(\"Intuition: if example is wrong, moving parameters a tiny bit won't make it right, so give up.\")\n    text(\"So what do we do?\")\n\n\ndef gradient_zero_one_loss(example: Example, params: Parameters) -> Parameters:  # @inspect example params\n    logit = example.x @ params.weight + params.bias  # @inspect logit\n    margin = logit * example.target_y  # @inspect margin\n    # Zero everywhere except when margin = 0, where it's undefined\n    return Parameters(weight=np.zeros_like(params.weight), bias=0)\n\n\ndef logistic_function():\n    text(\"A logit is a number between -\u221e and +\u221e.\")\n    text(\"We want to convert a logit into a probability (must be between 0 and 1).\")\n    text(\"There are many functions that do this, but the **logistic function** is a standard choice.\")\n\n    plot(make_plot(\"logistic function\", \"logit\", \"prob\", logistic, xrange=(-10, 10)))  # @stepover\n\n    logit = 0  # @inspect logit\n    prob = logistic(logit)  # @inspect prob\n    logit = 1  # @inspect logit\n    prob = logistic(logit)  # @inspect prob @stepover\n    logit = 8  # @inspect logit\n    prob = logistic(logit)  # @inspect prob @stepover\n    logit = -1  # @inspect logit\n    prob = logistic(logit)  # @inspect prob @stepover\n    logit = -8  # @inspect logit\n    prob = logistic(logit)  # @inspect prob @stepover\n\n    text(\"Another interpretation: log odds\") # @clear logit prob\n    prob = 0.2  # @inspect prob\n    odds = prob / (1 - prob)  # @inspect odds\n    logit = np.log(odds)  # @inspect logit\n    prob2 = logistic(logit)  # @inspect prob2 @stepover\n    assert prob == prob2  # @clear prob odds logit prob2\n\n    text(\"Properties\")\n    text(\"- As logit \u2192 -\u221e, prob \u2192 0\")\n    text(\"- As logit \u2192 +\u221e, prob \u2192 1\")\n    text(\"- As logit \u2192 0, prob \u2192 0.5\")\n\n    prob1 = logistic(logit=3)  # @inspect prob1 @stepover\n    prob2 = logistic(logit=-3)  # @inspect prob2 @stepover\n    assert np.allclose(prob1 + prob2, 1)\n\n    text(\"The derivative of the logistic function is quite simple and elegant\")\n    grad_prob = gradient_logistic(logit=3)  # @inspect grad_prob\n    text(\"As |logit| \u2192 -\u221e, grad_prob \u2192 0\")\n    plot(make_plot(\"derivative of logistic function\", \"logit\", \"grad_prob\", gradient_logistic, xrange=(-10, 10))) # @stepover\n\n\ndef logistic(logit: float) -> float:  # @inspect logit\n    prob = 1 / (1 + np.exp(-logit))  # @inspect prob\n    return prob\n\n\ndef gradient_logistic(logit: float) -> float:\n    prob = logistic(logit)  # @inspect prob @stepover\n    grad = prob * (1 - prob)  # @inspect grad\n    return grad\n\n\ndef logistic_loss_function():\n    text(\"To solve the zero gradient problem, we have to rethink the loss function\")\n    text(\"...and actually, even what our classifer outputs.\")\n\n    text(\"Let's take a set of parameters and an example.\")\n    params = Parameters(weight=np.array([1, -1]), bias=1)  # @inspect params\n    example = Example(x=np.array([2, 0]), target_y=1)  # @inspect example\n\n    text(\"So far, our predictor turns a logit into a single prediction\")    \n    predicted_y = binary_classifier(params, example.x)  # @inspect predicted_y @stepover\n    text(\"Thresholding is a very discrete operation...\")\n    \n    text(\"Instead, let us make things continuous by having a classifier output a probability distribution (continuous) over labels.\")  # @clear predicted_y\n    text(\"The key to doing this will be the **logistic** function.\")\n    logistic_function()\n    text(\"The logistic function was used in statistics in **logistic regression** [Berkson, 1944].\")\n\n    text(\"Now we can compute the probability of y\")\n    logit = example.x @ params.weight + params.bias  # @inspect logit\n    prob_pos = logistic(logit)  # p(y=1|x) @inspect prob_pos @stepover\n    prob_neg = logistic(-logit)  # p(y=-1|x) @inspect prob_neg @stepover\n    margin = logit * example.target_y  # @inspect margin\n    prob_target = logistic(margin)  # p(y=target_y|x) @inspect prob_target @stepover\n\n    text(\"**Maximum likelihood** principle: maximize the log probability of the training targets\")\n\n    text(\"If we have multiple examples, we'd multiply the probabilities: p(y1|x1) * p(y2|x2)\")\n    text(\"Equivalent to summing the log probabilities: log p(y1|x1) + log p(y2|x2)\")\n    log_prob_target = np.log(prob_target)  # @inspect log_prob_target\n\n    text(\"To turn this into a loss, just negate it (maximize likelihood = minimize loss)\")\n    loss = -log_prob_target  # @inspect loss\n\n    text(\"Let's package it up into a function:\")  # @clear logit prob_pos prob_neg prob_target log_prob_target loss\n    loss = logistic_loss(example, params)  # @inspect loss\n\n    text(\"Recall the zero-one loss, which has a sharp cliff at 0.\")\n    data = make_plot(\"zero-one loss\", \"margin\", \"loss\", lambda margin: int(margin <= 0))  # @stepover\n    plot(data)\n\n    text(\"The logistic loss is smooth, but goes to 0 when the margin grows.\")\n    data = make_plot(\"logistic loss\", \"margin\", \"loss\", lambda margin: -np.log(logistic(margin)))  # @stepover\n    plot(data)\n\n    text(\"As before, the training loss is the average of the per-example losses.\")\n    training_data = get_training_data()  # @inspect training_data @clear example params loss @stepover\n    train_loss = train_logistic_loss(params, training_data)  # @inspect train_loss\n\n\ndef logistic_loss(example: Example, params: Parameters) -> float:  # @inspect example params\n    # logit: sign is prediction, magnitude is how confident we are \n    logit = example.x @ params.weight + params.bias  # @inspect logit\n    # margin: sign measures correct (+) or not (-)\n    margin = logit * example.target_y  # @inspect margin\n    prob_target = logistic(margin)  # @inspect prob_target @stepover\n    loss = -np.log(prob_target)  # @inspect loss\n    return loss\n\n\ndef train_logistic_loss(params: Parameters, training_data: list[Example]) -> float:  # @inspect params training_data\n    losses = [logistic_loss(example, params) for example in training_data]  # @inspect losses @stepover\n    train_loss = np.mean(losses)  # @inspect train_loss\n    return train_loss\n\n\ndef logistic_loss_optimization():\n    text(\"Now we are ready to optimize the logistic loss.\")\n\n    text(\"Let's compute the gradient of the loss for one example.\")\n    params = Parameters(weight=np.array([0, 0]), bias=0)  # @inspect params\n    example = Example(x=np.array([2, 0]), target_y=1)  # @inspect example\n    grad = gradient_logistic_loss(example, params)  # @inspect grad\n\n    text(\"Now the gradient of the training loss is the average of the gradients of the examples.\")\n    training_data = get_training_data()  # @inspect training_data @clear example grad @stepover\n    grad = gradient_train_logistic_loss(params, training_data)  # @inspect grad\n\n    text(\"Now we can do gradient descent, which repeatedly updates the parameters in the direction of the gradient.\")\n    gradient_descent()\n\n\ndef gradient_logistic_loss(example: Example, params: Parameters) -> Parameters:  # @inspect example params\n    logit = example.x @ params.weight + params.bias  # @inspect logit\n    margin = logit * example.target_y  # @inspect margin\n    loss = -np.log(logistic(margin))  # @inspect loss @stepover\n    grad_logit = -logistic(-margin)  # @inspect grad_logit @stepover\n    grad_weight = example.target_y * example.x * grad_logit  # @inspect grad_weight\n    grad_bias = example.target_y * grad_logit  # @inspect grad_bias\n    return Parameters(weight=grad_weight, bias=grad_bias)\n\n\ndef gradient_train_logistic_loss(params: Parameters, training_data: list[Example]) -> Parameters:  # @inspect params training_data\n    grads = [gradient_logistic_loss(example, params) for example in training_data]  # @inspect grads @stepover\n    mean_weight = np.mean([grad.weight for grad in grads], axis=0)  # @inspect mean_weight\n    mean_bias = np.mean([grad.bias for grad in grads])  # @inspect mean_bias\n    return Parameters(weight=mean_weight, bias=mean_bias)\n\n\ndef gradient_descent():\n    # Initialization\n    training_data = get_training_data()  # @stepover\n    params = Parameters(weight=np.array([0, 0]), bias=0)  # @inspect params\n    learning_rate = 1\n\n    losses = []\n    for step in range(20):  # @inspect step\n        train_loss = train_logistic_loss(params, training_data)  # @inspect train_loss @stepover\n        grad = gradient_train_logistic_loss(params, training_data)  # @inspect grad @stepover\n        params = Parameters(  # @inspect params\n            weight=params.weight - learning_rate * grad.weight,\n            bias=params.bias - learning_rate * grad.bias,\n        )\n        losses.append(train_loss)\n\n    # Learning curve\n    plot(Chart(Data(values=[{\"step\": i, \"loss\": loss} for i, loss in enumerate(losses)])).mark_line().encode(x=\"step:Q\", y=\"loss:Q\").to_dict())\n\n    text(\"Plot the decision boundary:\")\n    points = [example_to_point(example) for example in training_data]  # @stepover\n    plot(make_plot(\"decision boundary\", \"x0\", \"x1\", lambda x0: -(params.weight[0] * x0 + params.bias) / params.weight[1], points=points))  # @stepover\n\n\ndef multiclass_classification():\n    text(\"Binary classification (output y \u2208 {-1, 1})\")\n    text(\"Multiclass classification (output y \u2208 {0, 1, ..., K-1})\")\n\n    text(\"For binary classification, we compute a single logit for each input.\")\n    text(\"Sign of logit is the predicted class\")\n    x = np.array([2, 0])  # @inspect x\n    params = Parameters(weight=np.array([1, -1]), bias=-1)  # @inspect params\n    logit = x @ params.weight + params.bias  # @inspect logit\n    prob_pos = logistic(logit)  # @inspect prob_pos @stepover\n    prob_neg = 1 - prob_pos  # @inspect prob_neg\n\n    text(\"For multiclass classification\")  # @clear prob_pos prob_neg x params logit\n    text(\"- Define a weight vector for each class\")\n    text(\"- Compute a logit for each class\")\n    text(\"- Predict a distribution over classes\")\n    params = Parameters(weight=np.array([[1, -1], [1, -1], [0, 2]]), bias=np.array([1, 1, 0]))  # @inspect params\n    x = np.array([2, 0])  # @inspect x\n    logits = params.weight @ x + params.bias  # @inspect logits\n    text(\"How do I turn logits into probabilities?\")\n    introduce_softmax()\n    probs = softmax(logits)  # @inspect probs\n\n    text(\"Now let us define the cross entropy loss.\")\n    introduce_cross_entropy()\n\n    text(\"Now we can compute the cross entropy loss for an example:\")\n    example = Example(x=x, target_y=0)  # @inspect example\n    cross_entropy = cross_entropy_loss(params, example)  # @inspect cross_entropy\n    text(\"Given this loss, we can perform gradient descent to optimize the parameters.\")\n\n    text(\"Summary\")\n    text(\"- Softmax: turn logits into probabilities\")\n    text(\"- Cross entropy: measures difference between target distribution and predicted distribution\")\n    text(\"- Cross entropy loss: generalizes logistic loss, predicted probability of target class\")\n\n\ndef introduce_softmax():\n    text(\"Recall: the logistic function maps (-\u221e, +\u221e) to (0, 1)\")\n\n    text(\"The softmax function generalizes this to multiple classes.\")\n\n    logits = np.array([1, -1, 0])  # @inspect logits\n    probs = softmax(logits)  # @inspect softmax_logits\n\n    text(\"Shifting up logits doesn't change the relative probabilities\")\n    logits1 = np.array([1, -1, 0])  # @inspect logits1\n    probs1 = softmax(logits1)  # @inspect probs1 @stepover\n    logits2 = np.array(logits1 + 2)  # @inspect logits2\n    probs2 = softmax(logits2)  # @inspect probs2 @stepover\n    assert np.allclose(probs1, probs2)\n\n\ndef softmax(logits: np.ndarray) -> np.ndarray:  # @inspect logits\n    exp_logits = np.exp(logits)  # @inspect exp_logits\n    probs = exp_logits / np.sum(exp_logits)  # @inspect probs\n    return probs\n\n\ndef cross_entropy_loss(params: Parameters, example: Example) -> float:  # @inspect params example\n    num_classes = len(params.weight)  # @inspect num_classes\n    logits = [example.x @ params.weight[y] + params.bias[y] for y in range(num_classes)]  # @inspect logits\n    probs = softmax(logits)  # @inspect probs\n    cross_entropy = -np.log(probs[example.target_y])  # @inspect cross_entropy\n    return cross_entropy\n\n\ndef introduce_cross_entropy():\n    text(\"Cross entropy: measures the difference between a target distribution and a predicted distribution\")\n    target = np.array([0.5, 0.2, 0.3])  # @inspect target\n    predicted = np.array([0.1, 0.5, 0.4])  # @inspect predicted\n\n    text(\"Penalized when target puts high probability on outcome, and predicted puts low probability on it.\")\n    terms = target * -np.log(predicted)  # @inspect terms\n    cross_entropy = np.sum(terms)  # @inspect cross_entropy\n\n    text(\"Cross entropy is minimized when target = predicted\")\n    text(\"... and the cross entropy is entropy of target (or predicted).\")\n\n    text(\"Special case: target is a single label (represented as a one-hot vector)\") # @clear target predicted terms cross_entropy\n    target = np.array([0, 1, 0])  # @inspect target\n    predicted = np.array([0.1, 0.5, 0.4])  # @inspect predicted\n    terms = target * -np.log(predicted)  # @inspect terms\n    cross_entropy = np.sum(terms)  # @inspect cross_entropy\n    text(\"This is the same as the negative log probability of the target class.\")\n\n\ndef representing_text():\n    text(\"Prediction tasks involve text(strings), but machine learning operates on tensors.\")\n\n    string = \"the cat in the hat\"\n\n    text(\"How do we represent a string as a tensor?\")\n    text(\"1. Tokenization: convert a string into a sequence of integers.\")\n    text(\"2. Represent each integer as a one-hot vector.\")\n\n    vocab, indices = tokenization()  # @inspect indices\n\n    text(\"### Interpretation\")\n    text(\"Represent each index as a one-hot vector.\")\n    index = indices[4]  # @inspect index\n    vector = np.eye(len(vocab))[index]  # @inspect vector @stepover\n\n    text(\"So the string is represented as a sequence of vectors, or a matrix:\")\n    matrix = np.eye(len(vocab))[indices]  # @inspect matrix @stepover @clear index vector\n\n    text(\"### Operations\")\n    text(\"In practice, we store the indices and not the one-hot vectors to save memory.\")\n    text(\"We can operate directly using the indices.\")\n    text(\"Suppose we want to take the dot product of each position with `w`.\")\n    np.random.seed(1)\n    w = np.random.randn(len(vocab))  # @inspect w @stepover\n\n    # Use a matrix-vector product\n    y = matrix @ w  # @inspect y\n\n    # Equivalently, index into the weight vectors\n    y_index = w[indices]  # @inspect y_index\n\n    text(\"### Bag of words representation\")\n    text(\"Represent each token as a (one-hot) vector.\")\n    text(\"Represent each text as the average of the token vectors.\")\n    bow = reduce(matrix, \"pos vocab -> vocab\", \"mean\")  # @inspect bow\n    text(\"Then we can operate on this fixed-dimensional vector.\")\n    y_bow = bow @ w  # @inspect y_bow\n\n    text(\"Equivalently, we can operate directly on the indices:\")\n    y_bow_index = np.mean(w[indices])  # @inspect y_bow_index\n    \n    text(\"Bag of words:\")\n    text(\"- Pro: doesn't depend on the length of the text\")\n    text(\"- Con: doesn't pay attention to word order (*dog bites man* = *man bites dog*)\")\n\n    text(\"Summary\")\n    text(\"- Problem: convert strings to tensors for machine learning\")\n    text(\"- Solution: tokenization + one-hot encoding\")\n    text(\"- Tokenization: split strings into words and build up a vocabulary (string \u2194 index)\")\n    text(\"- Mathematically work with one-hot vectors; in code, work with indices\")\n\n\ndef tokenization():\n    string = \"the cat in the hat\"\n\n    # Simple tokenization\n    text(\"Split a string by space into words and convert them into integers.\")\n    vocab = Vocabulary()  # @inspect vocab\n    words = string.split()  # @inspect words\n    indices = [vocab.get_index(word) for word in words]  # @inspect indices vocab\n\n    # Fancier tokenization\n    text(\"Language models use more sophisticated tokenizers (Byte-Pair Encoding) \"), link(\"https://arxiv.org/pdf/1508.07909\")\n    text(\"To get a feel for how tokenizers work, play with this \"), link(title=\"interactive site\", url=\"https://tiktokenizer.vercel.app/?encoder=gpt2\")\n    tokenzier = tiktoken.get_encoding(\"gpt2\")\n    gpt2_indices = tokenzier.encode(string)  # @inspect gpt2_indices\n\n    return vocab, indices\n\n\nclass Vocabulary:\n    \"\"\"Maps strings to integers.\"\"\"\n    def __init__(self):\n        self.index_to_string: list[str] = []\n        self.string_to_index: dict[str, int] = {}\n\n    def get_index(self, string: str) -> int:  # @inspect string\n        index = self.string_to_index.get(string)  # @inspect index\n        if index is None:  # New string\n            index = len(self.index_to_string)  # @inspect index\n            self.index_to_string.append(string)\n            self.string_to_index[string] = index\n        return index\n\n    def get_string(self, index: int) -> str:\n        return self.index_to_string[index]\n\n    def __len__(self):\n        return len(self.index_to_string)\n\n    def asdict(self):\n        return {\n            \"index_to_string\": self.index_to_string,\n            \"string_to_index\": self.string_to_index,\n        }\n\n\ndef example_to_point(example: Example) -> dict:\n    return {\"x0\": example.x[0], \"x1\": example.x[1], \"color\": \"red\" if example.target_y == 1 else \"blue\"}\n\n\ndef make_plot(title: str,\n              xlabel: str,\n              ylabel: str,\n              f: Callable[[float], float] | None,\n              xrange: tuple[float, float] = (-3, 3),\n              points: list[dict] | None = None) -> dict:\n    to_show = []\n\n    if f is not None:\n        values = [{xlabel: x, ylabel: f(x)} for x in np.linspace(xrange[0], xrange[1], 30)]\n        line = Chart(Data(values=values)).properties(title=title).mark_line().encode(x=f\"{xlabel}:Q\", y=f\"{ylabel}:Q\")\n        to_show.append(line)\n\n    if points is not None:\n        points = Chart(Data(values=points)).mark_point().encode(x=f\"{xlabel}:Q\", y=f\"{ylabel}:Q\", color=\"color:N\")\n        to_show.append(points)\n\n    chart = functools.reduce(lambda c1, c2: c1 + c2, to_show)\n    return chart.to_dict()\n\n\nif __name__ == \"__main__\":\n    main()"
   },
   "hidden_line_numbers": {
     "linear_classification.py": []
@@ -17,28 +17,6 @@
       ],
       "env": {},
       "renderings": []
-    },
-    {
-      "stack": [
-        {
-          "path": "linear_classification.py",
-          "line_number": 11,
-          "function_name": "main",
-          "code": "image(\"images/survey1.png\", width=800)"
-        }
-      ],
-      "env": {},
-      "renderings": [
-        {
-          "type": "image",
-          "data": "images/survey1.png",
-          "style": {
-            "width": 800
-          },
-          "external_link": null,
-          "internal_link": null
-        }
-      ]
     },
     {
       "stack": [
@@ -276,14 +254,14 @@
           "path": "linear_classification.py",
           "line_number": 47,
           "function_name": "prediction_task",
-          "code": "text(\"- **Input**: an image; e.g.\")"
+          "code": "text(\"- **Input**: an image; e.g. (Von.grzanka, CC-BY-SA-3.0)\")"
         }
       ],
       "env": {},
       "renderings": [
         {
           "type": "markdown",
-          "data": "- **Input**: an image; e.g.",
+          "data": "- **Input**: an image; e.g. (Von.grzanka, CC-BY-SA-3.0)",
           "style": {},
           "external_link": null,
           "internal_link": null
@@ -1154,60 +1132,6 @@
         }
       ],
       "env": {},
-      "renderings": []
-    },
-    {
-      "stack": [
-        {
-          "path": "linear_classification.py",
-          "line_number": 25,
-          "function_name": "main",
-          "code": "prediction_task()"
-        },
-        {
-          "path": "linear_classification.py",
-          "line_number": 80,
-          "function_name": "prediction_task",
-          "code": "plot(make_plot(\"decision boundary\", \"x0\", \"x1\", lambda x0: x0 - 1, points=[example_to_point(Example(x=x_a, target_y=predicted_y_a)), example_to_point(Example(x=x_b, target_y=predicted_y_b))]))  # @stepover"
-        },
-        {
-          "path": "linear_classification.py",
-          "line_number": 616,
-          "function_name": "make_plot",
-          "code": "values = [{xlabel: x, ylabel: f(x)} for x in np.linspace(xrange[0], xrange[1], 30)]"
-        },
-        {
-          "path": "linear_classification.py",
-          "line_number": 616,
-          "function_name": "<listcomp>",
-          "code": "values = [{xlabel: x, ylabel: f(x)} for x in np.linspace(xrange[0], xrange[1], 30)]"
-        },
-        {
-          "path": "linear_classification.py",
-          "line_number": 80,
-          "function_name": "<lambda>",
-          "code": "plot(make_plot(\"decision boundary\", \"x0\", \"x1\", lambda x0: x0 - 1, points=[example_to_point(Example(x=x_a, target_y=predicted_y_a)), example_to_point(Example(x=x_b, target_y=predicted_y_b))]))  # @stepover"
-        }
-      ],
-      "env": {},
-      "renderings": []
-    },
-    {
-      "stack": [
-        {
-          "path": "linear_classification.py",
-          "line_number": 25,
-          "function_name": "main",
-          "code": "prediction_task()"
-        },
-        {
-          "path": "linear_classification.py",
-          "line_number": 80,
-          "function_name": "prediction_task",
-          "code": "plot(make_plot(\"decision boundary\", \"x0\", \"x1\", lambda x0: x0 - 1, points=[example_to_point(Example(x=x_a, target_y=predicted_y_a)), example_to_point(Example(x=x_b, target_y=predicted_y_b))]))  # @stepover"
-        }
-      ],
-      "env": {},
       "renderings": [
         {
           "type": "plot",
@@ -1393,7 +1317,7 @@
                 }
               }
             ],
-            "$schema": "https://vega.github.io/schema/vega-lite/v5.20.1.json"
+            "$schema": "https://vega.github.io/schema/vega-lite/v6.1.0.json"
           },
           "style": null,
           "external_link": null,
@@ -1785,6 +1709,72 @@
         },
         {
           "path": "linear_classification.py",
+          "line_number": 90,
+          "function_name": "machine_learning_problem",
+          "code": "data = [example_to_point(example) for example in training_data]  # @stepover"
+        },
+        {
+          "path": "linear_classification.py",
+          "line_number": 603,
+          "function_name": "example_to_point",
+          "code": "def example_to_point(example: Example) -> dict:"
+        }
+      ],
+      "env": {},
+      "renderings": []
+    },
+    {
+      "stack": [
+        {
+          "path": "linear_classification.py",
+          "line_number": 26,
+          "function_name": "main",
+          "code": "machine_learning_problem()"
+        },
+        {
+          "path": "linear_classification.py",
+          "line_number": 90,
+          "function_name": "machine_learning_problem",
+          "code": "data = [example_to_point(example) for example in training_data]  # @stepover"
+        },
+        {
+          "path": "linear_classification.py",
+          "line_number": 604,
+          "function_name": "example_to_point",
+          "code": "return {\"x0\": example.x[0], \"x1\": example.x[1], \"color\": \"red\" if example.target_y == 1 else \"blue\"}"
+        }
+      ],
+      "env": {},
+      "renderings": []
+    },
+    {
+      "stack": [
+        {
+          "path": "linear_classification.py",
+          "line_number": 26,
+          "function_name": "main",
+          "code": "machine_learning_problem()"
+        },
+        {
+          "path": "linear_classification.py",
+          "line_number": 90,
+          "function_name": "machine_learning_problem",
+          "code": "data = [example_to_point(example) for example in training_data]  # @stepover"
+        }
+      ],
+      "env": {},
+      "renderings": []
+    },
+    {
+      "stack": [
+        {
+          "path": "linear_classification.py",
+          "line_number": 26,
+          "function_name": "main",
+          "code": "machine_learning_problem()"
+        },
+        {
+          "path": "linear_classification.py",
           "line_number": 91,
           "function_name": "machine_learning_problem",
           "code": "plot(make_plot(\"training data\", \"x0\", \"x1\", f=None, points=data))  # @stepover"
@@ -1837,7 +1827,7 @@
                 "type": "quantitative"
               }
             },
-            "$schema": "https://vega.github.io/schema/vega-lite/v5.20.1.json"
+            "$schema": "https://vega.github.io/schema/vega-lite/v6.1.0.json"
           },
           "style": null,
           "external_link": null,
@@ -2372,60 +2362,6 @@
         }
       ],
       "env": {},
-      "renderings": []
-    },
-    {
-      "stack": [
-        {
-          "path": "linear_classification.py",
-          "line_number": 28,
-          "function_name": "main",
-          "code": "hypothesis_class()"
-        },
-        {
-          "path": "linear_classification.py",
-          "line_number": 123,
-          "function_name": "hypothesis_class",
-          "code": "plot(make_plot(\"binary classifier\", \"x0\", \"x1\", lambda x0: x0 - 1, points=[example_to_point(Example(x=x, target_y=predicted_y))]))  # @stepover"
-        },
-        {
-          "path": "linear_classification.py",
-          "line_number": 616,
-          "function_name": "make_plot",
-          "code": "values = [{xlabel: x, ylabel: f(x)} for x in np.linspace(xrange[0], xrange[1], 30)]"
-        },
-        {
-          "path": "linear_classification.py",
-          "line_number": 616,
-          "function_name": "<listcomp>",
-          "code": "values = [{xlabel: x, ylabel: f(x)} for x in np.linspace(xrange[0], xrange[1], 30)]"
-        },
-        {
-          "path": "linear_classification.py",
-          "line_number": 123,
-          "function_name": "<lambda>",
-          "code": "plot(make_plot(\"binary classifier\", \"x0\", \"x1\", lambda x0: x0 - 1, points=[example_to_point(Example(x=x, target_y=predicted_y))]))  # @stepover"
-        }
-      ],
-      "env": {},
-      "renderings": []
-    },
-    {
-      "stack": [
-        {
-          "path": "linear_classification.py",
-          "line_number": 28,
-          "function_name": "main",
-          "code": "hypothesis_class()"
-        },
-        {
-          "path": "linear_classification.py",
-          "line_number": 123,
-          "function_name": "hypothesis_class",
-          "code": "plot(make_plot(\"binary classifier\", \"x0\", \"x1\", lambda x0: x0 - 1, points=[example_to_point(Example(x=x, target_y=predicted_y))]))  # @stepover"
-        }
-      ],
-      "env": {},
       "renderings": [
         {
           "type": "plot",
@@ -2606,7 +2542,7 @@
                 }
               }
             ],
-            "$schema": "https://vega.github.io/schema/vega-lite/v5.20.1.json"
+            "$schema": "https://vega.github.io/schema/vega-lite/v6.1.0.json"
           },
           "style": null,
           "external_link": null,
@@ -2921,60 +2857,6 @@
         }
       ],
       "env": {},
-      "renderings": []
-    },
-    {
-      "stack": [
-        {
-          "path": "linear_classification.py",
-          "line_number": 28,
-          "function_name": "main",
-          "code": "hypothesis_class()"
-        },
-        {
-          "path": "linear_classification.py",
-          "line_number": 129,
-          "function_name": "hypothesis_class",
-          "code": "plot(make_plot(\"binary classifier\", \"x0\", \"x1\", lambda x0: x0 + 1, points=[example_to_point(Example(x=x, target_y=predicted_y))]))  # @stepover"
-        },
-        {
-          "path": "linear_classification.py",
-          "line_number": 616,
-          "function_name": "make_plot",
-          "code": "values = [{xlabel: x, ylabel: f(x)} for x in np.linspace(xrange[0], xrange[1], 30)]"
-        },
-        {
-          "path": "linear_classification.py",
-          "line_number": 616,
-          "function_name": "<listcomp>",
-          "code": "values = [{xlabel: x, ylabel: f(x)} for x in np.linspace(xrange[0], xrange[1], 30)]"
-        },
-        {
-          "path": "linear_classification.py",
-          "line_number": 129,
-          "function_name": "<lambda>",
-          "code": "plot(make_plot(\"binary classifier\", \"x0\", \"x1\", lambda x0: x0 + 1, points=[example_to_point(Example(x=x, target_y=predicted_y))]))  # @stepover"
-        }
-      ],
-      "env": {},
-      "renderings": []
-    },
-    {
-      "stack": [
-        {
-          "path": "linear_classification.py",
-          "line_number": 28,
-          "function_name": "main",
-          "code": "hypothesis_class()"
-        },
-        {
-          "path": "linear_classification.py",
-          "line_number": 129,
-          "function_name": "hypothesis_class",
-          "code": "plot(make_plot(\"binary classifier\", \"x0\", \"x1\", lambda x0: x0 + 1, points=[example_to_point(Example(x=x, target_y=predicted_y))]))  # @stepover"
-        }
-      ],
-      "env": {},
       "renderings": [
         {
           "type": "plot",
@@ -3155,7 +3037,7 @@
                 }
               }
             ],
-            "$schema": "https://vega.github.io/schema/vega-lite/v5.20.1.json"
+            "$schema": "https://vega.github.io/schema/vega-lite/v6.1.0.json"
           },
           "style": null,
           "external_link": null,
@@ -3829,60 +3711,6 @@
         }
       ],
       "env": {},
-      "renderings": []
-    },
-    {
-      "stack": [
-        {
-          "path": "linear_classification.py",
-          "line_number": 29,
-          "function_name": "main",
-          "code": "zero_one_loss_function()"
-        },
-        {
-          "path": "linear_classification.py",
-          "line_number": 166,
-          "function_name": "zero_one_loss_function",
-          "code": "plot(make_plot(\"squared loss\", \"residual\", \"loss\", lambda residual: residual ** 2))  # @stepover"
-        },
-        {
-          "path": "linear_classification.py",
-          "line_number": 616,
-          "function_name": "make_plot",
-          "code": "values = [{xlabel: x, ylabel: f(x)} for x in np.linspace(xrange[0], xrange[1], 30)]"
-        },
-        {
-          "path": "linear_classification.py",
-          "line_number": 616,
-          "function_name": "<listcomp>",
-          "code": "values = [{xlabel: x, ylabel: f(x)} for x in np.linspace(xrange[0], xrange[1], 30)]"
-        },
-        {
-          "path": "linear_classification.py",
-          "line_number": 166,
-          "function_name": "<lambda>",
-          "code": "plot(make_plot(\"squared loss\", \"residual\", \"loss\", lambda residual: residual ** 2))  # @stepover"
-        }
-      ],
-      "env": {},
-      "renderings": []
-    },
-    {
-      "stack": [
-        {
-          "path": "linear_classification.py",
-          "line_number": 29,
-          "function_name": "main",
-          "code": "zero_one_loss_function()"
-        },
-        {
-          "path": "linear_classification.py",
-          "line_number": 166,
-          "function_name": "zero_one_loss_function",
-          "code": "plot(make_plot(\"squared loss\", \"residual\", \"loss\", lambda residual: residual ** 2))  # @stepover"
-        }
-      ],
-      "env": {},
       "renderings": [
         {
           "type": "plot",
@@ -4031,7 +3859,7 @@
               }
             },
             "title": "squared loss",
-            "$schema": "https://vega.github.io/schema/vega-lite/v5.20.1.json"
+            "$schema": "https://vega.github.io/schema/vega-lite/v6.1.0.json"
           },
           "style": null,
           "external_link": null,
@@ -5246,60 +5074,6 @@
         }
       ],
       "env": {},
-      "renderings": []
-    },
-    {
-      "stack": [
-        {
-          "path": "linear_classification.py",
-          "line_number": 29,
-          "function_name": "main",
-          "code": "zero_one_loss_function()"
-        },
-        {
-          "path": "linear_classification.py",
-          "line_number": 175,
-          "function_name": "zero_one_loss_function",
-          "code": "plot(make_plot(\"zero-one loss\", \"margin\", \"loss\", lambda margin: int(margin <= 0)))  # @stepover"
-        },
-        {
-          "path": "linear_classification.py",
-          "line_number": 616,
-          "function_name": "make_plot",
-          "code": "values = [{xlabel: x, ylabel: f(x)} for x in np.linspace(xrange[0], xrange[1], 30)]"
-        },
-        {
-          "path": "linear_classification.py",
-          "line_number": 616,
-          "function_name": "<listcomp>",
-          "code": "values = [{xlabel: x, ylabel: f(x)} for x in np.linspace(xrange[0], xrange[1], 30)]"
-        },
-        {
-          "path": "linear_classification.py",
-          "line_number": 175,
-          "function_name": "<lambda>",
-          "code": "plot(make_plot(\"zero-one loss\", \"margin\", \"loss\", lambda margin: int(margin <= 0)))  # @stepover"
-        }
-      ],
-      "env": {},
-      "renderings": []
-    },
-    {
-      "stack": [
-        {
-          "path": "linear_classification.py",
-          "line_number": 29,
-          "function_name": "main",
-          "code": "zero_one_loss_function()"
-        },
-        {
-          "path": "linear_classification.py",
-          "line_number": 175,
-          "function_name": "zero_one_loss_function",
-          "code": "plot(make_plot(\"zero-one loss\", \"margin\", \"loss\", lambda margin: int(margin <= 0)))  # @stepover"
-        }
-      ],
-      "env": {},
       "renderings": [
         {
           "type": "plot",
@@ -5448,7 +5222,7 @@
               }
             },
             "title": "zero-one loss",
-            "$schema": "https://vega.github.io/schema/vega-lite/v5.20.1.json"
+            "$schema": "https://vega.github.io/schema/vega-lite/v6.1.0.json"
           },
           "style": null,
           "external_link": null,
@@ -5671,6 +5445,250 @@
           "shape": null
         }
       },
+      "renderings": []
+    },
+    {
+      "stack": [
+        {
+          "path": "linear_classification.py",
+          "line_number": 29,
+          "function_name": "main",
+          "code": "zero_one_loss_function()"
+        },
+        {
+          "path": "linear_classification.py",
+          "line_number": 179,
+          "function_name": "zero_one_loss_function",
+          "code": "train_loss = train_zero_one_loss(params, training_data)  # @inspect train_loss"
+        },
+        {
+          "path": "linear_classification.py",
+          "line_number": 211,
+          "function_name": "train_zero_one_loss",
+          "code": "losses = [zero_one_loss_inline(example, params) for example in training_data]  # @inspect losses @stepover"
+        }
+      ],
+      "env": {},
+      "renderings": []
+    },
+    {
+      "stack": [
+        {
+          "path": "linear_classification.py",
+          "line_number": 29,
+          "function_name": "main",
+          "code": "zero_one_loss_function()"
+        },
+        {
+          "path": "linear_classification.py",
+          "line_number": 179,
+          "function_name": "zero_one_loss_function",
+          "code": "train_loss = train_zero_one_loss(params, training_data)  # @inspect train_loss"
+        },
+        {
+          "path": "linear_classification.py",
+          "line_number": 211,
+          "function_name": "train_zero_one_loss",
+          "code": "losses = [zero_one_loss_inline(example, params) for example in training_data]  # @inspect losses @stepover"
+        },
+        {
+          "path": "linear_classification.py",
+          "line_number": 201,
+          "function_name": "zero_one_loss_inline",
+          "code": "def zero_one_loss_inline(example: Example, params: Parameters) -> float:  # @inspect example params"
+        }
+      ],
+      "env": {
+        "example": {
+          "type": "linear_classification.Example",
+          "contents": {
+            "x": {
+              "type": "numpy.ndarray",
+              "contents": [
+                2,
+                0
+              ],
+              "dtype": "int64",
+              "shape": [
+                2
+              ]
+            },
+            "target_y": {
+              "type": "int",
+              "contents": 1,
+              "dtype": null,
+              "shape": null
+            }
+          },
+          "dtype": null,
+          "shape": null
+        },
+        "params": {
+          "type": "linear_classification.Parameters",
+          "contents": {
+            "weight": {
+              "type": "numpy.ndarray",
+              "contents": [
+                0,
+                0
+              ],
+              "dtype": "int64",
+              "shape": [
+                2
+              ]
+            },
+            "bias": {
+              "type": "int",
+              "contents": -1,
+              "dtype": null,
+              "shape": null
+            }
+          },
+          "dtype": null,
+          "shape": null
+        }
+      },
+      "renderings": []
+    },
+    {
+      "stack": [
+        {
+          "path": "linear_classification.py",
+          "line_number": 29,
+          "function_name": "main",
+          "code": "zero_one_loss_function()"
+        },
+        {
+          "path": "linear_classification.py",
+          "line_number": 179,
+          "function_name": "zero_one_loss_function",
+          "code": "train_loss = train_zero_one_loss(params, training_data)  # @inspect train_loss"
+        },
+        {
+          "path": "linear_classification.py",
+          "line_number": 211,
+          "function_name": "train_zero_one_loss",
+          "code": "losses = [zero_one_loss_inline(example, params) for example in training_data]  # @inspect losses @stepover"
+        },
+        {
+          "path": "linear_classification.py",
+          "line_number": 203,
+          "function_name": "zero_one_loss_inline",
+          "code": "logit = example.x @ params.weight + params.bias  # @inspect logit"
+        }
+      ],
+      "env": {
+        "logit": {
+          "type": "numpy.int64",
+          "contents": -1,
+          "dtype": null,
+          "shape": null
+        }
+      },
+      "renderings": []
+    },
+    {
+      "stack": [
+        {
+          "path": "linear_classification.py",
+          "line_number": 29,
+          "function_name": "main",
+          "code": "zero_one_loss_function()"
+        },
+        {
+          "path": "linear_classification.py",
+          "line_number": 179,
+          "function_name": "zero_one_loss_function",
+          "code": "train_loss = train_zero_one_loss(params, training_data)  # @inspect train_loss"
+        },
+        {
+          "path": "linear_classification.py",
+          "line_number": 211,
+          "function_name": "train_zero_one_loss",
+          "code": "losses = [zero_one_loss_inline(example, params) for example in training_data]  # @inspect losses @stepover"
+        },
+        {
+          "path": "linear_classification.py",
+          "line_number": 205,
+          "function_name": "zero_one_loss_inline",
+          "code": "margin = logit * example.target_y  # @inspect margin"
+        }
+      ],
+      "env": {
+        "margin": {
+          "type": "numpy.int64",
+          "contents": -1,
+          "dtype": null,
+          "shape": null
+        }
+      },
+      "renderings": []
+    },
+    {
+      "stack": [
+        {
+          "path": "linear_classification.py",
+          "line_number": 29,
+          "function_name": "main",
+          "code": "zero_one_loss_function()"
+        },
+        {
+          "path": "linear_classification.py",
+          "line_number": 179,
+          "function_name": "zero_one_loss_function",
+          "code": "train_loss = train_zero_one_loss(params, training_data)  # @inspect train_loss"
+        },
+        {
+          "path": "linear_classification.py",
+          "line_number": 211,
+          "function_name": "train_zero_one_loss",
+          "code": "losses = [zero_one_loss_inline(example, params) for example in training_data]  # @inspect losses @stepover"
+        },
+        {
+          "path": "linear_classification.py",
+          "line_number": 206,
+          "function_name": "zero_one_loss_inline",
+          "code": "loss = int(margin <= 0)  # Whether the prediction was wrong @inspect loss"
+        }
+      ],
+      "env": {
+        "loss": {
+          "type": "int",
+          "contents": 1,
+          "dtype": null,
+          "shape": null
+        }
+      },
+      "renderings": []
+    },
+    {
+      "stack": [
+        {
+          "path": "linear_classification.py",
+          "line_number": 29,
+          "function_name": "main",
+          "code": "zero_one_loss_function()"
+        },
+        {
+          "path": "linear_classification.py",
+          "line_number": 179,
+          "function_name": "zero_one_loss_function",
+          "code": "train_loss = train_zero_one_loss(params, training_data)  # @inspect train_loss"
+        },
+        {
+          "path": "linear_classification.py",
+          "line_number": 211,
+          "function_name": "train_zero_one_loss",
+          "code": "losses = [zero_one_loss_inline(example, params) for example in training_data]  # @inspect losses @stepover"
+        },
+        {
+          "path": "linear_classification.py",
+          "line_number": 207,
+          "function_name": "zero_one_loss_inline",
+          "code": "return loss"
+        }
+      ],
+      "env": {},
       "renderings": []
     },
     {
@@ -6361,6 +6379,250 @@
           "code": "losses = [zero_one_loss_inline(example, params) for example in training_data]  # @inspect losses @stepover"
         }
       ],
+      "env": {},
+      "renderings": []
+    },
+    {
+      "stack": [
+        {
+          "path": "linear_classification.py",
+          "line_number": 30,
+          "function_name": "main",
+          "code": "zero_one_loss_optimization()"
+        },
+        {
+          "path": "linear_classification.py",
+          "line_number": 224,
+          "function_name": "zero_one_loss_optimization",
+          "code": "train_loss = train_zero_one_loss(params, training_data)  # @inspect train_loss"
+        },
+        {
+          "path": "linear_classification.py",
+          "line_number": 211,
+          "function_name": "train_zero_one_loss",
+          "code": "losses = [zero_one_loss_inline(example, params) for example in training_data]  # @inspect losses @stepover"
+        },
+        {
+          "path": "linear_classification.py",
+          "line_number": 201,
+          "function_name": "zero_one_loss_inline",
+          "code": "def zero_one_loss_inline(example: Example, params: Parameters) -> float:  # @inspect example params"
+        }
+      ],
+      "env": {
+        "example": {
+          "type": "linear_classification.Example",
+          "contents": {
+            "x": {
+              "type": "numpy.ndarray",
+              "contents": [
+                2,
+                0
+              ],
+              "dtype": "int64",
+              "shape": [
+                2
+              ]
+            },
+            "target_y": {
+              "type": "int",
+              "contents": 1,
+              "dtype": null,
+              "shape": null
+            }
+          },
+          "dtype": null,
+          "shape": null
+        },
+        "params": {
+          "type": "linear_classification.Parameters",
+          "contents": {
+            "weight": {
+              "type": "numpy.ndarray",
+              "contents": [
+                1,
+                1
+              ],
+              "dtype": "int64",
+              "shape": [
+                2
+              ]
+            },
+            "bias": {
+              "type": "int",
+              "contents": 0,
+              "dtype": null,
+              "shape": null
+            }
+          },
+          "dtype": null,
+          "shape": null
+        }
+      },
+      "renderings": []
+    },
+    {
+      "stack": [
+        {
+          "path": "linear_classification.py",
+          "line_number": 30,
+          "function_name": "main",
+          "code": "zero_one_loss_optimization()"
+        },
+        {
+          "path": "linear_classification.py",
+          "line_number": 224,
+          "function_name": "zero_one_loss_optimization",
+          "code": "train_loss = train_zero_one_loss(params, training_data)  # @inspect train_loss"
+        },
+        {
+          "path": "linear_classification.py",
+          "line_number": 211,
+          "function_name": "train_zero_one_loss",
+          "code": "losses = [zero_one_loss_inline(example, params) for example in training_data]  # @inspect losses @stepover"
+        },
+        {
+          "path": "linear_classification.py",
+          "line_number": 203,
+          "function_name": "zero_one_loss_inline",
+          "code": "logit = example.x @ params.weight + params.bias  # @inspect logit"
+        }
+      ],
+      "env": {
+        "logit": {
+          "type": "numpy.int64",
+          "contents": 2,
+          "dtype": null,
+          "shape": null
+        }
+      },
+      "renderings": []
+    },
+    {
+      "stack": [
+        {
+          "path": "linear_classification.py",
+          "line_number": 30,
+          "function_name": "main",
+          "code": "zero_one_loss_optimization()"
+        },
+        {
+          "path": "linear_classification.py",
+          "line_number": 224,
+          "function_name": "zero_one_loss_optimization",
+          "code": "train_loss = train_zero_one_loss(params, training_data)  # @inspect train_loss"
+        },
+        {
+          "path": "linear_classification.py",
+          "line_number": 211,
+          "function_name": "train_zero_one_loss",
+          "code": "losses = [zero_one_loss_inline(example, params) for example in training_data]  # @inspect losses @stepover"
+        },
+        {
+          "path": "linear_classification.py",
+          "line_number": 205,
+          "function_name": "zero_one_loss_inline",
+          "code": "margin = logit * example.target_y  # @inspect margin"
+        }
+      ],
+      "env": {
+        "margin": {
+          "type": "numpy.int64",
+          "contents": 2,
+          "dtype": null,
+          "shape": null
+        }
+      },
+      "renderings": []
+    },
+    {
+      "stack": [
+        {
+          "path": "linear_classification.py",
+          "line_number": 30,
+          "function_name": "main",
+          "code": "zero_one_loss_optimization()"
+        },
+        {
+          "path": "linear_classification.py",
+          "line_number": 224,
+          "function_name": "zero_one_loss_optimization",
+          "code": "train_loss = train_zero_one_loss(params, training_data)  # @inspect train_loss"
+        },
+        {
+          "path": "linear_classification.py",
+          "line_number": 211,
+          "function_name": "train_zero_one_loss",
+          "code": "losses = [zero_one_loss_inline(example, params) for example in training_data]  # @inspect losses @stepover"
+        },
+        {
+          "path": "linear_classification.py",
+          "line_number": 206,
+          "function_name": "zero_one_loss_inline",
+          "code": "loss = int(margin <= 0)  # Whether the prediction was wrong @inspect loss"
+        }
+      ],
+      "env": {
+        "loss": {
+          "type": "int",
+          "contents": 0,
+          "dtype": null,
+          "shape": null
+        }
+      },
+      "renderings": []
+    },
+    {
+      "stack": [
+        {
+          "path": "linear_classification.py",
+          "line_number": 30,
+          "function_name": "main",
+          "code": "zero_one_loss_optimization()"
+        },
+        {
+          "path": "linear_classification.py",
+          "line_number": 224,
+          "function_name": "zero_one_loss_optimization",
+          "code": "train_loss = train_zero_one_loss(params, training_data)  # @inspect train_loss"
+        },
+        {
+          "path": "linear_classification.py",
+          "line_number": 211,
+          "function_name": "train_zero_one_loss",
+          "code": "losses = [zero_one_loss_inline(example, params) for example in training_data]  # @inspect losses @stepover"
+        },
+        {
+          "path": "linear_classification.py",
+          "line_number": 207,
+          "function_name": "zero_one_loss_inline",
+          "code": "return loss"
+        }
+      ],
+      "env": {},
+      "renderings": []
+    },
+    {
+      "stack": [
+        {
+          "path": "linear_classification.py",
+          "line_number": 30,
+          "function_name": "main",
+          "code": "zero_one_loss_optimization()"
+        },
+        {
+          "path": "linear_classification.py",
+          "line_number": 224,
+          "function_name": "zero_one_loss_optimization",
+          "code": "train_loss = train_zero_one_loss(params, training_data)  # @inspect train_loss"
+        },
+        {
+          "path": "linear_classification.py",
+          "line_number": 211,
+          "function_name": "train_zero_one_loss",
+          "code": "losses = [zero_one_loss_inline(example, params) for example in training_data]  # @inspect losses @stepover"
+        }
+      ],
       "env": {
         "losses": {
           "type": "list",
@@ -6810,60 +7072,6 @@
         }
       ],
       "env": {},
-      "renderings": []
-    },
-    {
-      "stack": [
-        {
-          "path": "linear_classification.py",
-          "line_number": 30,
-          "function_name": "main",
-          "code": "zero_one_loss_optimization()"
-        },
-        {
-          "path": "linear_classification.py",
-          "line_number": 232,
-          "function_name": "zero_one_loss_optimization",
-          "code": "plot(make_plot(\"zero-one loss\", \"margin\", \"loss\", lambda margin: int(margin <= 0)))  # @stepover"
-        },
-        {
-          "path": "linear_classification.py",
-          "line_number": 616,
-          "function_name": "make_plot",
-          "code": "values = [{xlabel: x, ylabel: f(x)} for x in np.linspace(xrange[0], xrange[1], 30)]"
-        },
-        {
-          "path": "linear_classification.py",
-          "line_number": 616,
-          "function_name": "<listcomp>",
-          "code": "values = [{xlabel: x, ylabel: f(x)} for x in np.linspace(xrange[0], xrange[1], 30)]"
-        },
-        {
-          "path": "linear_classification.py",
-          "line_number": 232,
-          "function_name": "<lambda>",
-          "code": "plot(make_plot(\"zero-one loss\", \"margin\", \"loss\", lambda margin: int(margin <= 0)))  # @stepover"
-        }
-      ],
-      "env": {},
-      "renderings": []
-    },
-    {
-      "stack": [
-        {
-          "path": "linear_classification.py",
-          "line_number": 30,
-          "function_name": "main",
-          "code": "zero_one_loss_optimization()"
-        },
-        {
-          "path": "linear_classification.py",
-          "line_number": 232,
-          "function_name": "zero_one_loss_optimization",
-          "code": "plot(make_plot(\"zero-one loss\", \"margin\", \"loss\", lambda margin: int(margin <= 0)))  # @stepover"
-        }
-      ],
-      "env": {},
       "renderings": [
         {
           "type": "plot",
@@ -7012,7 +7220,7 @@
               }
             },
             "title": "zero-one loss",
-            "$schema": "https://vega.github.io/schema/vega-lite/v5.20.1.json"
+            "$schema": "https://vega.github.io/schema/vega-lite/v6.1.0.json"
           },
           "style": null,
           "external_link": null,
@@ -7743,7 +7951,7 @@
               }
             },
             "title": "logistic function",
-            "$schema": "https://vega.github.io/schema/vega-lite/v5.20.1.json"
+            "$schema": "https://vega.github.io/schema/vega-lite/v6.1.0.json"
           },
           "style": null,
           "external_link": null,
@@ -9014,7 +9222,7 @@
               }
             },
             "title": "derivative of logistic function",
-            "$schema": "https://vega.github.io/schema/vega-lite/v5.20.1.json"
+            "$schema": "https://vega.github.io/schema/vega-lite/v6.1.0.json"
           },
           "style": null,
           "external_link": null,
@@ -9722,60 +9930,6 @@
         },
         {
           "path": "linear_classification.py",
-          "line_number": 333,
-          "function_name": "logistic_loss_function",
-          "code": "data = make_plot(\"zero-one loss\", \"margin\", \"loss\", lambda margin: int(margin <= 0))  # @stepover"
-        },
-        {
-          "path": "linear_classification.py",
-          "line_number": 616,
-          "function_name": "make_plot",
-          "code": "values = [{xlabel: x, ylabel: f(x)} for x in np.linspace(xrange[0], xrange[1], 30)]"
-        },
-        {
-          "path": "linear_classification.py",
-          "line_number": 616,
-          "function_name": "<listcomp>",
-          "code": "values = [{xlabel: x, ylabel: f(x)} for x in np.linspace(xrange[0], xrange[1], 30)]"
-        },
-        {
-          "path": "linear_classification.py",
-          "line_number": 333,
-          "function_name": "<lambda>",
-          "code": "data = make_plot(\"zero-one loss\", \"margin\", \"loss\", lambda margin: int(margin <= 0))  # @stepover"
-        }
-      ],
-      "env": {},
-      "renderings": []
-    },
-    {
-      "stack": [
-        {
-          "path": "linear_classification.py",
-          "line_number": 31,
-          "function_name": "main",
-          "code": "logistic_loss_function()"
-        },
-        {
-          "path": "linear_classification.py",
-          "line_number": 333,
-          "function_name": "logistic_loss_function",
-          "code": "data = make_plot(\"zero-one loss\", \"margin\", \"loss\", lambda margin: int(margin <= 0))  # @stepover"
-        }
-      ],
-      "env": {},
-      "renderings": []
-    },
-    {
-      "stack": [
-        {
-          "path": "linear_classification.py",
-          "line_number": 31,
-          "function_name": "main",
-          "code": "logistic_loss_function()"
-        },
-        {
-          "path": "linear_classification.py",
           "line_number": 334,
           "function_name": "logistic_loss_function",
           "code": "plot(data)"
@@ -9930,7 +10084,7 @@
               }
             },
             "title": "zero-one loss",
-            "$schema": "https://vega.github.io/schema/vega-lite/v5.20.1.json"
+            "$schema": "https://vega.github.io/schema/vega-lite/v6.1.0.json"
           },
           "style": null,
           "external_link": null,
@@ -9963,60 +10117,6 @@
           "internal_link": null
         }
       ]
-    },
-    {
-      "stack": [
-        {
-          "path": "linear_classification.py",
-          "line_number": 31,
-          "function_name": "main",
-          "code": "logistic_loss_function()"
-        },
-        {
-          "path": "linear_classification.py",
-          "line_number": 337,
-          "function_name": "logistic_loss_function",
-          "code": "data = make_plot(\"logistic loss\", \"margin\", \"loss\", lambda margin: -np.log(logistic(margin)))  # @stepover"
-        }
-      ],
-      "env": {},
-      "renderings": []
-    },
-    {
-      "stack": [
-        {
-          "path": "linear_classification.py",
-          "line_number": 31,
-          "function_name": "main",
-          "code": "logistic_loss_function()"
-        },
-        {
-          "path": "linear_classification.py",
-          "line_number": 337,
-          "function_name": "logistic_loss_function",
-          "code": "data = make_plot(\"logistic loss\", \"margin\", \"loss\", lambda margin: -np.log(logistic(margin)))  # @stepover"
-        },
-        {
-          "path": "linear_classification.py",
-          "line_number": 616,
-          "function_name": "make_plot",
-          "code": "values = [{xlabel: x, ylabel: f(x)} for x in np.linspace(xrange[0], xrange[1], 30)]"
-        },
-        {
-          "path": "linear_classification.py",
-          "line_number": 616,
-          "function_name": "<listcomp>",
-          "code": "values = [{xlabel: x, ylabel: f(x)} for x in np.linspace(xrange[0], xrange[1], 30)]"
-        },
-        {
-          "path": "linear_classification.py",
-          "line_number": 337,
-          "function_name": "<lambda>",
-          "code": "data = make_plot(\"logistic loss\", \"margin\", \"loss\", lambda margin: -np.log(logistic(margin)))  # @stepover"
-        }
-      ],
-      "env": {},
-      "renderings": []
     },
     {
       "stack": [
@@ -10200,7 +10300,7 @@
               }
             },
             "title": "logistic loss",
-            "$schema": "https://vega.github.io/schema/vega-lite/v5.20.1.json"
+            "$schema": "https://vega.github.io/schema/vega-lite/v6.1.0.json"
           },
           "style": null,
           "external_link": null,
@@ -13334,7 +13434,7 @@
             "weight": {
               "type": "numpy.ndarray",
               "contents": [
-                -0.11937003087780433,
+                -0.11937003087780429,
                 0.10038684438407393
               ],
               "dtype": "float64",
@@ -13344,7 +13444,7 @@
             },
             "bias": {
               "type": "numpy.float64",
-              "contents": 0.08625051265631982,
+              "contents": 0.08625051265631983,
               "dtype": null,
               "shape": null
             }
@@ -14142,7 +14242,7 @@
       "env": {
         "train_loss": {
           "type": "numpy.float64",
-          "contents": 0.22672875315349472,
+          "contents": 0.2267287531534948,
           "dtype": null,
           "shape": null
         }
@@ -14459,7 +14559,7 @@
               "type": "numpy.ndarray",
               "contents": [
                 -0.08311959006828583,
-                0.06078561043898023
+                0.060785610438980224
               ],
               "dtype": "float64",
               "shape": [
@@ -14605,7 +14705,7 @@
               "type": "numpy.ndarray",
               "contents": [
                 1.3178672558322468,
-                -1.3849395241716493
+                -1.3849395241716491
               ],
               "dtype": "float64",
               "shape": [
@@ -14704,7 +14804,7 @@
       "env": {
         "train_loss": {
           "type": "numpy.float64",
-          "contents": 0.19408436202087465,
+          "contents": 0.19408436202087467,
           "dtype": null,
           "shape": null
         }
@@ -14740,7 +14840,7 @@
               "type": "numpy.ndarray",
               "contents": [
                 -0.07731593493349835,
-                0.05500543194760984
+                0.055005431947609845
               ],
               "dtype": "float64",
               "shape": [
@@ -14749,7 +14849,7 @@
             },
             "bias": {
               "type": "numpy.float64",
-              "contents": 0.06760419291960006,
+              "contents": 0.06760419291960007,
               "dtype": null,
               "shape": null
             }
@@ -14789,7 +14889,7 @@
               "type": "numpy.ndarray",
               "contents": [
                 1.3178672558322468,
-                -1.3849395241716493
+                -1.3849395241716491
               ],
               "dtype": "float64",
               "shape": [
@@ -14886,7 +14986,7 @@
               "type": "numpy.ndarray",
               "contents": [
                 1.3951831907657453,
-                -1.4399449561192592
+                -1.439944956119259
               ],
               "dtype": "float64",
               "shape": [
@@ -14895,7 +14995,7 @@
             },
             "bias": {
               "type": "numpy.float64",
-              "contents": -1.024339048581804,
+              "contents": -1.0243390485818042,
               "dtype": null,
               "shape": null
             }
@@ -15020,7 +15120,7 @@
             "weight": {
               "type": "numpy.ndarray",
               "contents": [
-                -0.07228255460245199,
+                -0.07228255460245202,
                 0.05015097727982063
               ],
               "dtype": "float64",
@@ -15030,7 +15130,7 @@
             },
             "bias": {
               "type": "numpy.float64",
-              "contents": 0.06445748989856522,
+              "contents": 0.06445748989856519,
               "dtype": null,
               "shape": null
             }
@@ -15070,7 +15170,7 @@
               "type": "numpy.ndarray",
               "contents": [
                 1.3951831907657453,
-                -1.4399449561192592
+                -1.439944956119259
               ],
               "dtype": "float64",
               "shape": [
@@ -15079,7 +15179,7 @@
             },
             "bias": {
               "type": "numpy.float64",
-              "contents": -1.024339048581804,
+              "contents": -1.0243390485818042,
               "dtype": null,
               "shape": null
             }
@@ -15167,7 +15267,7 @@
               "type": "numpy.ndarray",
               "contents": [
                 1.4674657453681972,
-                -1.4900959333990798
+                -1.4900959333990795
               ],
               "dtype": "float64",
               "shape": [
@@ -15176,7 +15276,7 @@
             },
             "bias": {
               "type": "numpy.float64",
-              "contents": -1.0887965384803693,
+              "contents": -1.0887965384803695,
               "dtype": null,
               "shape": null
             }
@@ -15301,8 +15401,8 @@
             "weight": {
               "type": "numpy.ndarray",
               "contents": [
-                -0.06787139498295747,
-                0.04602699253916858
+                -0.06787139498295748,
+                0.04602699253916859
               ],
               "dtype": "float64",
               "shape": [
@@ -15311,7 +15411,7 @@
             },
             "bias": {
               "type": "numpy.float64",
-              "contents": 0.061519372569194465,
+              "contents": 0.06151937256919444,
               "dtype": null,
               "shape": null
             }
@@ -15351,7 +15451,7 @@
               "type": "numpy.ndarray",
               "contents": [
                 1.4674657453681972,
-                -1.4900959333990798
+                -1.4900959333990795
               ],
               "dtype": "float64",
               "shape": [
@@ -15360,7 +15460,7 @@
             },
             "bias": {
               "type": "numpy.float64",
-              "contents": -1.0887965384803693,
+              "contents": -1.0887965384803695,
               "dtype": null,
               "shape": null
             }
@@ -15448,7 +15548,7 @@
               "type": "numpy.ndarray",
               "contents": [
                 1.5353371403511547,
-                -1.5361229259382483
+                -1.536122925938248
               ],
               "dtype": "float64",
               "shape": [
@@ -15457,7 +15557,7 @@
             },
             "bias": {
               "type": "numpy.float64",
-              "contents": -1.1503159110495638,
+              "contents": -1.150315911049564,
               "dtype": null,
               "shape": null
             }
@@ -15582,8 +15682,8 @@
             "weight": {
               "type": "numpy.ndarray",
               "contents": [
-                -0.06397059786065726,
-                0.04248761598300319
+                -0.06397059786065727,
+                0.04248761598300321
               ],
               "dtype": "float64",
               "shape": [
@@ -15632,7 +15732,7 @@
               "type": "numpy.ndarray",
               "contents": [
                 1.5353371403511547,
-                -1.5361229259382483
+                -1.536122925938248
               ],
               "dtype": "float64",
               "shape": [
@@ -15641,7 +15741,7 @@
             },
             "bias": {
               "type": "numpy.float64",
-              "contents": -1.1503159110495638,
+              "contents": -1.150315911049564,
               "dtype": null,
               "shape": null
             }
@@ -15729,7 +15829,7 @@
               "type": "numpy.ndarray",
               "contents": [
                 1.599307738211812,
-                -1.5786105419212515
+                -1.5786105419212513
               ],
               "dtype": "float64",
               "shape": [
@@ -15738,7 +15838,7 @@
             },
             "bias": {
               "type": "numpy.float64",
-              "contents": -1.2090963112277144,
+              "contents": -1.2090963112277147,
               "dtype": null,
               "shape": null
             }
@@ -15828,7 +15928,7 @@
       "env": {
         "train_loss": {
           "type": "numpy.float64",
-          "contents": 0.15010701628578063,
+          "contents": 0.15010701628578074,
           "dtype": null,
           "shape": null
         }
@@ -15863,8 +15963,8 @@
             "weight": {
               "type": "numpy.ndarray",
               "contents": [
-                -0.06049410572258551,
-                0.03942211088414822
+                -0.06049410572258553,
+                0.03942211088414824
               ],
               "dtype": "float64",
               "shape": [
@@ -15873,7 +15973,7 @@
             },
             "bias": {
               "type": "numpy.float64",
-              "contents": 0.05622880396828963,
+              "contents": 0.056228803968289616,
               "dtype": null,
               "shape": null
             }
@@ -15913,7 +16013,7 @@
               "type": "numpy.ndarray",
               "contents": [
                 1.599307738211812,
-                -1.5786105419212515
+                -1.5786105419212513
               ],
               "dtype": "float64",
               "shape": [
@@ -15922,7 +16022,7 @@
             },
             "bias": {
               "type": "numpy.float64",
-              "contents": -1.2090963112277144,
+              "contents": -1.2090963112277147,
               "dtype": null,
               "shape": null
             }
@@ -16009,8 +16109,8 @@
             "weight": {
               "type": "numpy.ndarray",
               "contents": [
-                1.6598018439343973,
-                -1.6180326528053997
+                1.6598018439343976,
+                -1.6180326528053994
               ],
               "dtype": "float64",
               "shape": [
@@ -16019,7 +16119,7 @@
             },
             "bias": {
               "type": "numpy.float64",
-              "contents": -1.265325115196004,
+              "contents": -1.2653251151960043,
               "dtype": null,
               "shape": null
             }
@@ -16144,8 +16244,8 @@
             "weight": {
               "type": "numpy.ndarray",
               "contents": [
-                -0.0573745969493941,
-                0.03674516436959752
+                -0.05737459694939406,
+                0.03674516436959754
               ],
               "dtype": "float64",
               "shape": [
@@ -16154,7 +16254,7 @@
             },
             "bias": {
               "type": "numpy.float64",
-              "contents": 0.05385184778153912,
+              "contents": 0.05385184778153914,
               "dtype": null,
               "shape": null
             }
@@ -16193,8 +16293,8 @@
             "weight": {
               "type": "numpy.ndarray",
               "contents": [
-                1.6598018439343973,
-                -1.6180326528053997
+                1.6598018439343976,
+                -1.6180326528053994
               ],
               "dtype": "float64",
               "shape": [
@@ -16203,7 +16303,7 @@
             },
             "bias": {
               "type": "numpy.float64",
-              "contents": -1.265325115196004,
+              "contents": -1.2653251151960043,
               "dtype": null,
               "shape": null
             }
@@ -16291,7 +16391,7 @@
               "type": "numpy.ndarray",
               "contents": [
                 1.7171764408837915,
-                -1.6547778171749972
+                -1.654777817174997
               ],
               "dtype": "float64",
               "shape": [
@@ -16300,7 +16400,7 @@
             },
             "bias": {
               "type": "numpy.float64",
-              "contents": -1.3191769629775432,
+              "contents": -1.3191769629775434,
               "dtype": null,
               "shape": null
             }
@@ -16390,7 +16490,7 @@
       "env": {
         "train_loss": {
           "type": "numpy.float64",
-          "contents": 0.13459021676799957,
+          "contents": 0.13459021676799948,
           "dtype": null,
           "shape": null
         }
@@ -16425,7 +16525,7 @@
             "weight": {
               "type": "numpy.ndarray",
               "contents": [
-                -0.054558603067859535,
+                -0.05455860306785956,
                 0.03439016572814996
               ],
               "dtype": "float64",
@@ -16435,7 +16535,7 @@
             },
             "bias": {
               "type": "numpy.float64",
-              "contents": 0.05163665922519337,
+              "contents": 0.051636659225193345,
               "dtype": null,
               "shape": null
             }
@@ -16475,7 +16575,7 @@
               "type": "numpy.ndarray",
               "contents": [
                 1.7171764408837915,
-                -1.6547778171749972
+                -1.654777817174997
               ],
               "dtype": "float64",
               "shape": [
@@ -16484,7 +16584,7 @@
             },
             "bias": {
               "type": "numpy.float64",
-              "contents": -1.3191769629775432,
+              "contents": -1.3191769629775434,
               "dtype": null,
               "shape": null
             }
@@ -16572,7 +16672,7 @@
               "type": "numpy.ndarray",
               "contents": [
                 1.771735043951651,
-                -1.6891679829031472
+                -1.689167982903147
               ],
               "dtype": "float64",
               "shape": [
@@ -16581,7 +16681,7 @@
             },
             "bias": {
               "type": "numpy.float64",
-              "contents": -1.3708136222027365,
+              "contents": -1.3708136222027367,
               "dtype": null,
               "shape": null
             }
@@ -16671,7 +16771,7 @@
       "env": {
         "train_loss": {
           "type": "numpy.float64",
-          "contents": 0.12792456185601045,
+          "contents": 0.12792456185601042,
           "dtype": null,
           "shape": null
         }
@@ -16706,8 +16806,8 @@
             "weight": {
               "type": "numpy.ndarray",
               "contents": [
-                -0.05200307388623318,
-                0.03230446768313923
+                -0.05200307388623319,
+                0.03230446768313925
               ],
               "dtype": "float64",
               "shape": [
@@ -16716,7 +16816,7 @@
             },
             "bias": {
               "type": "numpy.float64",
-              "contents": 0.04957072175406382,
+              "contents": 0.049570721754063796,
               "dtype": null,
               "shape": null
             }
@@ -16756,7 +16856,7 @@
               "type": "numpy.ndarray",
               "contents": [
                 1.771735043951651,
-                -1.6891679829031472
+                -1.689167982903147
               ],
               "dtype": "float64",
               "shape": [
@@ -16765,7 +16865,7 @@
             },
             "bias": {
               "type": "numpy.float64",
-              "contents": -1.3708136222027365,
+              "contents": -1.3708136222027367,
               "dtype": null,
               "shape": null
             }
@@ -16853,7 +16953,7 @@
               "type": "numpy.ndarray",
               "contents": [
                 1.8237381178378842,
-                -1.7214724505862864
+                -1.7214724505862862
               ],
               "dtype": "float64",
               "shape": [
@@ -16862,7 +16962,7 @@
             },
             "bias": {
               "type": "numpy.float64",
-              "contents": -1.4203843439568002,
+              "contents": -1.4203843439568005,
               "dtype": null,
               "shape": null
             }
@@ -16952,7 +17052,7 @@
       "env": {
         "train_loss": {
           "type": "numpy.float64",
-          "contents": 0.12185873143116732,
+          "contents": 0.12185873143116736,
           "dtype": null,
           "shape": null
         }
@@ -16987,8 +17087,8 @@
             "weight": {
               "type": "numpy.ndarray",
               "contents": [
-                -0.04967291864450527,
-                0.030445991672750503
+                -0.04967291864450529,
+                0.030445991672750517
               ],
               "dtype": "float64",
               "shape": [
@@ -16997,7 +17097,7 @@
             },
             "bias": {
               "type": "numpy.float64",
-              "contents": 0.04764215114778241,
+              "contents": 0.0476421511477824,
               "dtype": null,
               "shape": null
             }
@@ -17037,7 +17137,7 @@
               "type": "numpy.ndarray",
               "contents": [
                 1.8237381178378842,
-                -1.7214724505862864
+                -1.7214724505862862
               ],
               "dtype": "float64",
               "shape": [
@@ -17046,7 +17146,7 @@
             },
             "bias": {
               "type": "numpy.float64",
-              "contents": -1.4203843439568002,
+              "contents": -1.4203843439568005,
               "dtype": null,
               "shape": null
             }
@@ -17134,7 +17234,7 @@
               "type": "numpy.ndarray",
               "contents": [
                 1.8734110364823895,
-                -1.7519184422590368
+                -1.7519184422590366
               ],
               "dtype": "float64",
               "shape": [
@@ -17143,7 +17243,7 @@
             },
             "bias": {
               "type": "numpy.float64",
-              "contents": -1.4680264951045827,
+              "contents": -1.468026495104583,
               "dtype": null,
               "shape": null
             }
@@ -17268,8 +17368,8 @@
             "weight": {
               "type": "numpy.ndarray",
               "contents": [
-                -0.0475392162087672,
-                0.028780759619936758
+                -0.047539216208767214,
+                0.02878075961993677
               ],
               "dtype": "float64",
               "shape": [
@@ -17278,7 +17378,7 @@
             },
             "bias": {
               "type": "numpy.float64",
-              "contents": 0.045839835910307575,
+              "contents": 0.04583983591030757,
               "dtype": null,
               "shape": null
             }
@@ -17318,7 +17418,7 @@
               "type": "numpy.ndarray",
               "contents": [
                 1.8734110364823895,
-                -1.7519184422590368
+                -1.7519184422590366
               ],
               "dtype": "float64",
               "shape": [
@@ -17327,7 +17427,7 @@
             },
             "bias": {
               "type": "numpy.float64",
-              "contents": -1.4680264951045827,
+              "contents": -1.468026495104583,
               "dtype": null,
               "shape": null
             }
@@ -17415,7 +17515,7 @@
               "type": "numpy.ndarray",
               "contents": [
                 1.9209502526911566,
-                -1.7806992018789736
+                -1.7806992018789733
               ],
               "dtype": "float64",
               "shape": [
@@ -17424,7 +17524,7 @@
             },
             "bias": {
               "type": "numpy.float64",
-              "contents": -1.5138663310148903,
+              "contents": -1.5138663310148905,
               "dtype": null,
               "shape": null
             }
@@ -17558,7 +17658,7 @@
                 },
                 {
                   "step": 8,
-                  "loss": 0.22672875315349472
+                  "loss": 0.2267287531534948
                 },
                 {
                   "step": 9,
@@ -17566,7 +17666,7 @@
                 },
                 {
                   "step": 10,
-                  "loss": 0.19408436202087465
+                  "loss": 0.19408436202087467
                 },
                 {
                   "step": 11,
@@ -17582,7 +17682,7 @@
                 },
                 {
                   "step": 14,
-                  "loss": 0.15010701628578063
+                  "loss": 0.15010701628578074
                 },
                 {
                   "step": 15,
@@ -17590,15 +17690,15 @@
                 },
                 {
                   "step": 16,
-                  "loss": 0.13459021676799957
+                  "loss": 0.13459021676799948
                 },
                 {
                   "step": 17,
-                  "loss": 0.12792456185601045
+                  "loss": 0.12792456185601042
                 },
                 {
                   "step": 18,
-                  "loss": 0.12185873143116732
+                  "loss": 0.12185873143116736
                 },
                 {
                   "step": 19,
@@ -17619,7 +17719,7 @@
                 "type": "quantitative"
               }
             },
-            "$schema": "https://vega.github.io/schema/vega-lite/v5.20.1.json"
+            "$schema": "https://vega.github.io/schema/vega-lite/v6.1.0.json"
           },
           "style": null,
           "external_link": null,
@@ -17699,9 +17799,15 @@
         },
         {
           "path": "linear_classification.py",
-          "line_number": 415,
+          "line_number": 414,
           "function_name": "gradient_descent",
-          "code": "plot(make_plot(\"decision boundary\", \"x0\", \"x1\", lambda x0: -(params.weight[0] * x0 + params.bias) / params.weight[1], points=points))  # @stepover"
+          "code": "points = [example_to_point(example) for example in training_data]  # @stepover"
+        },
+        {
+          "path": "linear_classification.py",
+          "line_number": 603,
+          "function_name": "example_to_point",
+          "code": "def example_to_point(example: Example) -> dict:"
         }
       ],
       "env": {},
@@ -17723,27 +17829,39 @@
         },
         {
           "path": "linear_classification.py",
-          "line_number": 415,
+          "line_number": 414,
           "function_name": "gradient_descent",
-          "code": "plot(make_plot(\"decision boundary\", \"x0\", \"x1\", lambda x0: -(params.weight[0] * x0 + params.bias) / params.weight[1], points=points))  # @stepover"
+          "code": "points = [example_to_point(example) for example in training_data]  # @stepover"
         },
         {
           "path": "linear_classification.py",
-          "line_number": 616,
-          "function_name": "make_plot",
-          "code": "values = [{xlabel: x, ylabel: f(x)} for x in np.linspace(xrange[0], xrange[1], 30)]"
+          "line_number": 604,
+          "function_name": "example_to_point",
+          "code": "return {\"x0\": example.x[0], \"x1\": example.x[1], \"color\": \"red\" if example.target_y == 1 else \"blue\"}"
+        }
+      ],
+      "env": {},
+      "renderings": []
+    },
+    {
+      "stack": [
+        {
+          "path": "linear_classification.py",
+          "line_number": 32,
+          "function_name": "main",
+          "code": "logistic_loss_optimization()"
         },
         {
           "path": "linear_classification.py",
-          "line_number": 616,
-          "function_name": "<listcomp>",
-          "code": "values = [{xlabel: x, ylabel: f(x)} for x in np.linspace(xrange[0], xrange[1], 30)]"
+          "line_number": 374,
+          "function_name": "logistic_loss_optimization",
+          "code": "gradient_descent()"
         },
         {
           "path": "linear_classification.py",
-          "line_number": 415,
-          "function_name": "<lambda>",
-          "code": "plot(make_plot(\"decision boundary\", \"x0\", \"x1\", lambda x0: -(params.weight[0] * x0 + params.bias) / params.weight[1], points=points))  # @stepover"
+          "line_number": 414,
+          "function_name": "gradient_descent",
+          "code": "points = [example_to_point(example) for example in training_data]  # @stepover"
         }
       ],
       "env": {},
@@ -17787,87 +17905,87 @@
                   "values": [
                     {
                       "x0": -3.0,
-                      "x1": -4.086438114539531
+                      "x1": -4.086438114539532
                     },
                     {
                       "x0": -2.793103448275862,
-                      "x1": -3.863246020728268
+                      "x1": -3.863246020728269
                     },
                     {
                       "x0": -2.586206896551724,
-                      "x1": -3.6400539269170062
+                      "x1": -3.6400539269170067
                     },
                     {
                       "x0": -2.3793103448275863,
-                      "x1": -3.4168618331057443
+                      "x1": -3.4168618331057448
                     },
                     {
                       "x0": -2.1724137931034484,
-                      "x1": -3.1936697392944815
+                      "x1": -3.193669739294482
                     },
                     {
                       "x0": -1.9655172413793103,
-                      "x1": -2.970477645483219
+                      "x1": -2.97047764548322
                     },
                     {
                       "x0": -1.7586206896551724,
-                      "x1": -2.747285551671957
+                      "x1": -2.747285551671958
                     },
                     {
                       "x0": -1.5517241379310345,
-                      "x1": -2.524093457860695
+                      "x1": -2.5240934578606953
                     },
                     {
                       "x0": -1.3448275862068966,
-                      "x1": -2.300901364049433
+                      "x1": -2.3009013640494334
                     },
                     {
                       "x0": -1.1379310344827587,
-                      "x1": -2.0777092702381705
+                      "x1": -2.077709270238171
                     },
                     {
                       "x0": -0.9310344827586206,
-                      "x1": -1.854517176426908
+                      "x1": -1.8545171764269086
                     },
                     {
                       "x0": -0.7241379310344827,
-                      "x1": -1.6313250826156458
+                      "x1": -1.6313250826156462
                     },
                     {
                       "x0": -0.5172413793103448,
-                      "x1": -1.4081329888043836
+                      "x1": -1.4081329888043839
                     },
                     {
                       "x0": -0.31034482758620685,
-                      "x1": -1.1849408949931213
+                      "x1": -1.1849408949931217
                     },
                     {
                       "x0": -0.10344827586206895,
-                      "x1": -0.9617488011818591
+                      "x1": -0.9617488011818593
                     },
                     {
                       "x0": 0.10344827586206895,
-                      "x1": -0.7385567073705969
+                      "x1": -0.7385567073705971
                     },
                     {
                       "x0": 0.31034482758620685,
-                      "x1": -0.5153646135593346
+                      "x1": -0.5153646135593348
                     },
                     {
                       "x0": 0.5172413793103448,
-                      "x1": -0.2921725197480724
+                      "x1": -0.29217251974807257
                     },
                     {
                       "x0": 0.7241379310344827,
-                      "x1": -0.06898042593681014
+                      "x1": -0.06898042593681027
                     },
                     {
                       "x0": 0.9310344827586206,
-                      "x1": 0.15421166787445206
+                      "x1": 0.15421166787445195
                     },
                     {
                       "x0": 1.137931034482759,
-                      "x1": 0.3774037616857149
+                      "x1": 0.37740376168571477
                     },
                     {
                       "x0": 1.3448275862068968,
@@ -17887,19 +18005,19 @@
                     },
                     {
                       "x0": 2.1724137931034484,
-                      "x1": 1.4933642307420256
+                      "x1": 1.4933642307420258
                     },
                     {
                       "x0": 2.3793103448275863,
-                      "x1": 1.7165563245532882
+                      "x1": 1.7165563245532884
                     },
                     {
                       "x0": 2.586206896551724,
-                      "x1": 1.9397484183645504
+                      "x1": 1.9397484183645506
                     },
                     {
                       "x0": 2.793103448275862,
-                      "x1": 2.1629405121758123
+                      "x1": 2.1629405121758127
                     },
                     {
                       "x0": 3.0,
@@ -17961,7 +18079,7 @@
                 }
               }
             ],
-            "$schema": "https://vega.github.io/schema/vega-lite/v5.20.1.json"
+            "$schema": "https://vega.github.io/schema/vega-lite/v6.1.0.json"
           },
           "style": null,
           "external_link": null,
@@ -20961,7 +21079,7 @@
       ],
       "env": {
         "vocab": {
-          "type": "linear_classification.Vocabulary",
+          "type": "dict",
           "contents": {
             "index_to_string": {
               "type": "list",
@@ -21090,12 +21208,6 @@
         },
         {
           "path": "linear_classification.py",
-          "line_number": 565,
-          "function_name": "<listcomp>",
-          "code": "indices = [vocab.get_index(word) for word in words]  # @inspect indices vocab"
-        },
-        {
-          "path": "linear_classification.py",
           "line_number": 582,
           "function_name": "get_index",
           "code": "def get_index(self, string: str) -> int:  # @inspect string"
@@ -21129,12 +21241,6 @@
           "path": "linear_classification.py",
           "line_number": 565,
           "function_name": "tokenization",
-          "code": "indices = [vocab.get_index(word) for word in words]  # @inspect indices vocab"
-        },
-        {
-          "path": "linear_classification.py",
-          "line_number": 565,
-          "function_name": "<listcomp>",
           "code": "indices = [vocab.get_index(word) for word in words]  # @inspect indices vocab"
         },
         {
@@ -21176,12 +21282,6 @@
         },
         {
           "path": "linear_classification.py",
-          "line_number": 565,
-          "function_name": "<listcomp>",
-          "code": "indices = [vocab.get_index(word) for word in words]  # @inspect indices vocab"
-        },
-        {
-          "path": "linear_classification.py",
           "line_number": 584,
           "function_name": "get_index",
           "code": "if index is None:  # New string"
@@ -21208,12 +21308,6 @@
           "path": "linear_classification.py",
           "line_number": 565,
           "function_name": "tokenization",
-          "code": "indices = [vocab.get_index(word) for word in words]  # @inspect indices vocab"
-        },
-        {
-          "path": "linear_classification.py",
-          "line_number": 565,
-          "function_name": "<listcomp>",
           "code": "indices = [vocab.get_index(word) for word in words]  # @inspect indices vocab"
         },
         {
@@ -21255,12 +21349,6 @@
         },
         {
           "path": "linear_classification.py",
-          "line_number": 565,
-          "function_name": "<listcomp>",
-          "code": "indices = [vocab.get_index(word) for word in words]  # @inspect indices vocab"
-        },
-        {
-          "path": "linear_classification.py",
           "line_number": 586,
           "function_name": "get_index",
           "code": "self.index_to_string.append(string)"
@@ -21287,12 +21375,6 @@
           "path": "linear_classification.py",
           "line_number": 565,
           "function_name": "tokenization",
-          "code": "indices = [vocab.get_index(word) for word in words]  # @inspect indices vocab"
-        },
-        {
-          "path": "linear_classification.py",
-          "line_number": 565,
-          "function_name": "<listcomp>",
           "code": "indices = [vocab.get_index(word) for word in words]  # @inspect indices vocab"
         },
         {
@@ -21327,12 +21409,6 @@
         },
         {
           "path": "linear_classification.py",
-          "line_number": 565,
-          "function_name": "<listcomp>",
-          "code": "indices = [vocab.get_index(word) for word in words]  # @inspect indices vocab"
-        },
-        {
-          "path": "linear_classification.py",
           "line_number": 588,
           "function_name": "get_index",
           "code": "return index"
@@ -21360,11 +21436,63 @@
           "line_number": 565,
           "function_name": "tokenization",
           "code": "indices = [vocab.get_index(word) for word in words]  # @inspect indices vocab"
+        }
+      ],
+      "env": {
+        "vocab": {
+          "type": "dict",
+          "contents": {
+            "index_to_string": {
+              "type": "list",
+              "contents": [
+                {
+                  "type": "str",
+                  "contents": "the",
+                  "dtype": null,
+                  "shape": null
+                }
+              ],
+              "dtype": null,
+              "shape": null
+            },
+            "string_to_index": {
+              "type": "dict",
+              "contents": {
+                "the": {
+                  "type": "int",
+                  "contents": 0,
+                  "dtype": null,
+                  "shape": null
+                }
+              },
+              "dtype": null,
+              "shape": null
+            }
+          },
+          "dtype": null,
+          "shape": null
+        }
+      },
+      "renderings": []
+    },
+    {
+      "stack": [
+        {
+          "path": "linear_classification.py",
+          "line_number": 35,
+          "function_name": "main",
+          "code": "representing_text()"
+        },
+        {
+          "path": "linear_classification.py",
+          "line_number": 514,
+          "function_name": "representing_text",
+          "code": "vocab, indices = tokenization()  # @inspect indices"
         },
         {
           "path": "linear_classification.py",
           "line_number": 565,
-          "function_name": "<listcomp>",
+          "function_name": "tokenization",
           "code": "indices = [vocab.get_index(word) for word in words]  # @inspect indices vocab"
         },
         {
@@ -21406,12 +21534,6 @@
         },
         {
           "path": "linear_classification.py",
-          "line_number": 565,
-          "function_name": "<listcomp>",
-          "code": "indices = [vocab.get_index(word) for word in words]  # @inspect indices vocab"
-        },
-        {
-          "path": "linear_classification.py",
           "line_number": 583,
           "function_name": "get_index",
           "code": "index = self.string_to_index.get(string)  # @inspect index"
@@ -21449,12 +21571,6 @@
         },
         {
           "path": "linear_classification.py",
-          "line_number": 565,
-          "function_name": "<listcomp>",
-          "code": "indices = [vocab.get_index(word) for word in words]  # @inspect indices vocab"
-        },
-        {
-          "path": "linear_classification.py",
           "line_number": 584,
           "function_name": "get_index",
           "code": "if index is None:  # New string"
@@ -21481,12 +21597,6 @@
           "path": "linear_classification.py",
           "line_number": 565,
           "function_name": "tokenization",
-          "code": "indices = [vocab.get_index(word) for word in words]  # @inspect indices vocab"
-        },
-        {
-          "path": "linear_classification.py",
-          "line_number": 565,
-          "function_name": "<listcomp>",
           "code": "indices = [vocab.get_index(word) for word in words]  # @inspect indices vocab"
         },
         {
@@ -21528,12 +21638,6 @@
         },
         {
           "path": "linear_classification.py",
-          "line_number": 565,
-          "function_name": "<listcomp>",
-          "code": "indices = [vocab.get_index(word) for word in words]  # @inspect indices vocab"
-        },
-        {
-          "path": "linear_classification.py",
           "line_number": 586,
           "function_name": "get_index",
           "code": "self.index_to_string.append(string)"
@@ -21560,12 +21664,6 @@
           "path": "linear_classification.py",
           "line_number": 565,
           "function_name": "tokenization",
-          "code": "indices = [vocab.get_index(word) for word in words]  # @inspect indices vocab"
-        },
-        {
-          "path": "linear_classification.py",
-          "line_number": 565,
-          "function_name": "<listcomp>",
           "code": "indices = [vocab.get_index(word) for word in words]  # @inspect indices vocab"
         },
         {
@@ -21600,12 +21698,6 @@
         },
         {
           "path": "linear_classification.py",
-          "line_number": 565,
-          "function_name": "<listcomp>",
-          "code": "indices = [vocab.get_index(word) for word in words]  # @inspect indices vocab"
-        },
-        {
-          "path": "linear_classification.py",
           "line_number": 588,
           "function_name": "get_index",
           "code": "return index"
@@ -21633,11 +21725,75 @@
           "line_number": 565,
           "function_name": "tokenization",
           "code": "indices = [vocab.get_index(word) for word in words]  # @inspect indices vocab"
+        }
+      ],
+      "env": {
+        "vocab": {
+          "type": "dict",
+          "contents": {
+            "index_to_string": {
+              "type": "list",
+              "contents": [
+                {
+                  "type": "str",
+                  "contents": "the",
+                  "dtype": null,
+                  "shape": null
+                },
+                {
+                  "type": "str",
+                  "contents": "cat",
+                  "dtype": null,
+                  "shape": null
+                }
+              ],
+              "dtype": null,
+              "shape": null
+            },
+            "string_to_index": {
+              "type": "dict",
+              "contents": {
+                "the": {
+                  "type": "int",
+                  "contents": 0,
+                  "dtype": null,
+                  "shape": null
+                },
+                "cat": {
+                  "type": "int",
+                  "contents": 1,
+                  "dtype": null,
+                  "shape": null
+                }
+              },
+              "dtype": null,
+              "shape": null
+            }
+          },
+          "dtype": null,
+          "shape": null
+        }
+      },
+      "renderings": []
+    },
+    {
+      "stack": [
+        {
+          "path": "linear_classification.py",
+          "line_number": 35,
+          "function_name": "main",
+          "code": "representing_text()"
+        },
+        {
+          "path": "linear_classification.py",
+          "line_number": 514,
+          "function_name": "representing_text",
+          "code": "vocab, indices = tokenization()  # @inspect indices"
         },
         {
           "path": "linear_classification.py",
           "line_number": 565,
-          "function_name": "<listcomp>",
+          "function_name": "tokenization",
           "code": "indices = [vocab.get_index(word) for word in words]  # @inspect indices vocab"
         },
         {
@@ -21679,12 +21835,6 @@
         },
         {
           "path": "linear_classification.py",
-          "line_number": 565,
-          "function_name": "<listcomp>",
-          "code": "indices = [vocab.get_index(word) for word in words]  # @inspect indices vocab"
-        },
-        {
-          "path": "linear_classification.py",
           "line_number": 583,
           "function_name": "get_index",
           "code": "index = self.string_to_index.get(string)  # @inspect index"
@@ -21722,12 +21872,6 @@
         },
         {
           "path": "linear_classification.py",
-          "line_number": 565,
-          "function_name": "<listcomp>",
-          "code": "indices = [vocab.get_index(word) for word in words]  # @inspect indices vocab"
-        },
-        {
-          "path": "linear_classification.py",
           "line_number": 584,
           "function_name": "get_index",
           "code": "if index is None:  # New string"
@@ -21754,12 +21898,6 @@
           "path": "linear_classification.py",
           "line_number": 565,
           "function_name": "tokenization",
-          "code": "indices = [vocab.get_index(word) for word in words]  # @inspect indices vocab"
-        },
-        {
-          "path": "linear_classification.py",
-          "line_number": 565,
-          "function_name": "<listcomp>",
           "code": "indices = [vocab.get_index(word) for word in words]  # @inspect indices vocab"
         },
         {
@@ -21801,12 +21939,6 @@
         },
         {
           "path": "linear_classification.py",
-          "line_number": 565,
-          "function_name": "<listcomp>",
-          "code": "indices = [vocab.get_index(word) for word in words]  # @inspect indices vocab"
-        },
-        {
-          "path": "linear_classification.py",
           "line_number": 586,
           "function_name": "get_index",
           "code": "self.index_to_string.append(string)"
@@ -21833,12 +21965,6 @@
           "path": "linear_classification.py",
           "line_number": 565,
           "function_name": "tokenization",
-          "code": "indices = [vocab.get_index(word) for word in words]  # @inspect indices vocab"
-        },
-        {
-          "path": "linear_classification.py",
-          "line_number": 565,
-          "function_name": "<listcomp>",
           "code": "indices = [vocab.get_index(word) for word in words]  # @inspect indices vocab"
         },
         {
@@ -21873,12 +21999,6 @@
         },
         {
           "path": "linear_classification.py",
-          "line_number": 565,
-          "function_name": "<listcomp>",
-          "code": "indices = [vocab.get_index(word) for word in words]  # @inspect indices vocab"
-        },
-        {
-          "path": "linear_classification.py",
           "line_number": 588,
           "function_name": "get_index",
           "code": "return index"
@@ -21906,11 +22026,87 @@
           "line_number": 565,
           "function_name": "tokenization",
           "code": "indices = [vocab.get_index(word) for word in words]  # @inspect indices vocab"
+        }
+      ],
+      "env": {
+        "vocab": {
+          "type": "dict",
+          "contents": {
+            "index_to_string": {
+              "type": "list",
+              "contents": [
+                {
+                  "type": "str",
+                  "contents": "the",
+                  "dtype": null,
+                  "shape": null
+                },
+                {
+                  "type": "str",
+                  "contents": "cat",
+                  "dtype": null,
+                  "shape": null
+                },
+                {
+                  "type": "str",
+                  "contents": "in",
+                  "dtype": null,
+                  "shape": null
+                }
+              ],
+              "dtype": null,
+              "shape": null
+            },
+            "string_to_index": {
+              "type": "dict",
+              "contents": {
+                "the": {
+                  "type": "int",
+                  "contents": 0,
+                  "dtype": null,
+                  "shape": null
+                },
+                "cat": {
+                  "type": "int",
+                  "contents": 1,
+                  "dtype": null,
+                  "shape": null
+                },
+                "in": {
+                  "type": "int",
+                  "contents": 2,
+                  "dtype": null,
+                  "shape": null
+                }
+              },
+              "dtype": null,
+              "shape": null
+            }
+          },
+          "dtype": null,
+          "shape": null
+        }
+      },
+      "renderings": []
+    },
+    {
+      "stack": [
+        {
+          "path": "linear_classification.py",
+          "line_number": 35,
+          "function_name": "main",
+          "code": "representing_text()"
+        },
+        {
+          "path": "linear_classification.py",
+          "line_number": 514,
+          "function_name": "representing_text",
+          "code": "vocab, indices = tokenization()  # @inspect indices"
         },
         {
           "path": "linear_classification.py",
           "line_number": 565,
-          "function_name": "<listcomp>",
+          "function_name": "tokenization",
           "code": "indices = [vocab.get_index(word) for word in words]  # @inspect indices vocab"
         },
         {
@@ -21952,12 +22148,6 @@
         },
         {
           "path": "linear_classification.py",
-          "line_number": 565,
-          "function_name": "<listcomp>",
-          "code": "indices = [vocab.get_index(word) for word in words]  # @inspect indices vocab"
-        },
-        {
-          "path": "linear_classification.py",
           "line_number": 583,
           "function_name": "get_index",
           "code": "index = self.string_to_index.get(string)  # @inspect index"
@@ -21995,12 +22185,6 @@
         },
         {
           "path": "linear_classification.py",
-          "line_number": 565,
-          "function_name": "<listcomp>",
-          "code": "indices = [vocab.get_index(word) for word in words]  # @inspect indices vocab"
-        },
-        {
-          "path": "linear_classification.py",
           "line_number": 584,
           "function_name": "get_index",
           "code": "if index is None:  # New string"
@@ -22027,12 +22211,6 @@
           "path": "linear_classification.py",
           "line_number": 565,
           "function_name": "tokenization",
-          "code": "indices = [vocab.get_index(word) for word in words]  # @inspect indices vocab"
-        },
-        {
-          "path": "linear_classification.py",
-          "line_number": 565,
-          "function_name": "<listcomp>",
           "code": "indices = [vocab.get_index(word) for word in words]  # @inspect indices vocab"
         },
         {
@@ -22064,11 +22242,87 @@
           "line_number": 565,
           "function_name": "tokenization",
           "code": "indices = [vocab.get_index(word) for word in words]  # @inspect indices vocab"
+        }
+      ],
+      "env": {
+        "vocab": {
+          "type": "dict",
+          "contents": {
+            "index_to_string": {
+              "type": "list",
+              "contents": [
+                {
+                  "type": "str",
+                  "contents": "the",
+                  "dtype": null,
+                  "shape": null
+                },
+                {
+                  "type": "str",
+                  "contents": "cat",
+                  "dtype": null,
+                  "shape": null
+                },
+                {
+                  "type": "str",
+                  "contents": "in",
+                  "dtype": null,
+                  "shape": null
+                }
+              ],
+              "dtype": null,
+              "shape": null
+            },
+            "string_to_index": {
+              "type": "dict",
+              "contents": {
+                "the": {
+                  "type": "int",
+                  "contents": 0,
+                  "dtype": null,
+                  "shape": null
+                },
+                "cat": {
+                  "type": "int",
+                  "contents": 1,
+                  "dtype": null,
+                  "shape": null
+                },
+                "in": {
+                  "type": "int",
+                  "contents": 2,
+                  "dtype": null,
+                  "shape": null
+                }
+              },
+              "dtype": null,
+              "shape": null
+            }
+          },
+          "dtype": null,
+          "shape": null
+        }
+      },
+      "renderings": []
+    },
+    {
+      "stack": [
+        {
+          "path": "linear_classification.py",
+          "line_number": 35,
+          "function_name": "main",
+          "code": "representing_text()"
+        },
+        {
+          "path": "linear_classification.py",
+          "line_number": 514,
+          "function_name": "representing_text",
+          "code": "vocab, indices = tokenization()  # @inspect indices"
         },
         {
           "path": "linear_classification.py",
           "line_number": 565,
-          "function_name": "<listcomp>",
+          "function_name": "tokenization",
           "code": "indices = [vocab.get_index(word) for word in words]  # @inspect indices vocab"
         },
         {
@@ -22110,12 +22364,6 @@
         },
         {
           "path": "linear_classification.py",
-          "line_number": 565,
-          "function_name": "<listcomp>",
-          "code": "indices = [vocab.get_index(word) for word in words]  # @inspect indices vocab"
-        },
-        {
-          "path": "linear_classification.py",
           "line_number": 583,
           "function_name": "get_index",
           "code": "index = self.string_to_index.get(string)  # @inspect index"
@@ -22153,12 +22401,6 @@
         },
         {
           "path": "linear_classification.py",
-          "line_number": 565,
-          "function_name": "<listcomp>",
-          "code": "indices = [vocab.get_index(word) for word in words]  # @inspect indices vocab"
-        },
-        {
-          "path": "linear_classification.py",
           "line_number": 584,
           "function_name": "get_index",
           "code": "if index is None:  # New string"
@@ -22185,12 +22427,6 @@
           "path": "linear_classification.py",
           "line_number": 565,
           "function_name": "tokenization",
-          "code": "indices = [vocab.get_index(word) for word in words]  # @inspect indices vocab"
-        },
-        {
-          "path": "linear_classification.py",
-          "line_number": 565,
-          "function_name": "<listcomp>",
           "code": "indices = [vocab.get_index(word) for word in words]  # @inspect indices vocab"
         },
         {
@@ -22232,12 +22468,6 @@
         },
         {
           "path": "linear_classification.py",
-          "line_number": 565,
-          "function_name": "<listcomp>",
-          "code": "indices = [vocab.get_index(word) for word in words]  # @inspect indices vocab"
-        },
-        {
-          "path": "linear_classification.py",
           "line_number": 586,
           "function_name": "get_index",
           "code": "self.index_to_string.append(string)"
@@ -22264,12 +22494,6 @@
           "path": "linear_classification.py",
           "line_number": 565,
           "function_name": "tokenization",
-          "code": "indices = [vocab.get_index(word) for word in words]  # @inspect indices vocab"
-        },
-        {
-          "path": "linear_classification.py",
-          "line_number": 565,
-          "function_name": "<listcomp>",
           "code": "indices = [vocab.get_index(word) for word in words]  # @inspect indices vocab"
         },
         {
@@ -22304,12 +22528,6 @@
         },
         {
           "path": "linear_classification.py",
-          "line_number": 565,
-          "function_name": "<listcomp>",
-          "code": "indices = [vocab.get_index(word) for word in words]  # @inspect indices vocab"
-        },
-        {
-          "path": "linear_classification.py",
           "line_number": 588,
           "function_name": "get_index",
           "code": "return index"
@@ -22340,45 +22558,8 @@
         }
       ],
       "env": {
-        "indices": {
-          "type": "list",
-          "contents": [
-            {
-              "type": "int",
-              "contents": 0,
-              "dtype": null,
-              "shape": null
-            },
-            {
-              "type": "int",
-              "contents": 1,
-              "dtype": null,
-              "shape": null
-            },
-            {
-              "type": "int",
-              "contents": 2,
-              "dtype": null,
-              "shape": null
-            },
-            {
-              "type": "int",
-              "contents": 0,
-              "dtype": null,
-              "shape": null
-            },
-            {
-              "type": "int",
-              "contents": 3,
-              "dtype": null,
-              "shape": null
-            }
-          ],
-          "dtype": null,
-          "shape": null
-        },
         "vocab": {
-          "type": "linear_classification.Vocabulary",
+          "type": "dict",
           "contents": {
             "index_to_string": {
               "type": "list",
@@ -22443,6 +22624,43 @@
               "shape": null
             }
           },
+          "dtype": null,
+          "shape": null
+        },
+        "indices": {
+          "type": "list",
+          "contents": [
+            {
+              "type": "int",
+              "contents": 0,
+              "dtype": null,
+              "shape": null
+            },
+            {
+              "type": "int",
+              "contents": 1,
+              "dtype": null,
+              "shape": null
+            },
+            {
+              "type": "int",
+              "contents": 2,
+              "dtype": null,
+              "shape": null
+            },
+            {
+              "type": "int",
+              "contents": 0,
+              "dtype": null,
+              "shape": null
+            },
+            {
+              "type": "int",
+              "contents": 3,
+              "dtype": null,
+              "shape": null
+            }
+          ],
           "dtype": null,
           "shape": null
         }
@@ -23052,7 +23270,7 @@
           "contents": [
             1.6243453636632417,
             -0.6117564136500754,
-            -0.5281717522634557,
+            -0.5281717522634558,
             -1.0729686221561705
           ],
           "dtype": "float64",
@@ -23084,7 +23302,7 @@
           "contents": [
             1.6243453636632417,
             -0.6117564136500754,
-            -0.5281717522634557,
+            -0.5281717522634558,
             1.6243453636632417,
             -1.0729686221561705
           ],
@@ -23117,7 +23335,7 @@
           "contents": [
             1.6243453636632417,
             -0.6117564136500754,
-            -0.5281717522634557,
+            -0.5281717522634558,
             1.6243453636632417,
             -1.0729686221561705
           ],
@@ -23283,7 +23501,7 @@
       "env": {
         "y_bow": {
           "type": "numpy.float64",
-          "contents": 0.2071587878513564,
+          "contents": 0.20715878785135633,
           "dtype": null,
           "shape": null
         }
