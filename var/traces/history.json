@@ -1,6 +1,6 @@
 {
   "files": {
-    "history.py": "from edtrace import text, image, link\nfrom util import article_link\n\n\ndef main():\n    link(\"https://stanford-cs221.github.io/autumn2023/modules/module.html#include=general%2Fhistory.js&slideId=turing&level=0&mode=print6pp\", title=\"Slides from Autumn 2023\")\n\n    turing_test()\n\n    text(\"The history of AI is the story of three intellectual traditions:\")\n\n    symbolic_ai()\n    neural_ai()\n    statistical_ai()\n\n    foundation_models()\n    parting_thoughts()\n\n\ndef turing_test():\n    text(\"In 1950, this man:\")\n    image(\"images/alan-turing.jpg\", width=150)\n    text(\"published this paper:\")\n    image(\"images/turing-1950-paper.jpg\", width=300)\n\n    text(\"Alan Turing asked: \\\"Can machines think?\\\"\")\n    text(\"More basically: How could you tell?\")\n    text(\"His answer: Imitation Game (the Turing Test)\")\n    image(\"images/turing-test.jpg\", width=200)\n\n    text(\"Significance: ground philosophical question in objective measurement\")\n    text(\"Left open the solution: machine learning? logic?\")\n\n\ndef symbolic_ai():\n    text(\"1956: John McCarthy organized workshop at Dartmouth College\")\n    image(\"images/dartmouth.jpg\", width=100)\n    text(\"Huangavin, CC-BY-3.0\")\n    text(\"- Convened the leading thinkers of the day (Shannon, Minsky, etc.)\")\n    text(\"- Goal was to make a \\\"significant advance\\\" in 2 months\")\n    text(\"- Coined the term \\\"artificial intelligence\\\"\")\n\n    text(\"1952: Arthur Samuel\\'s checkers playing program\")\n    text(\"- Weights were learned\")\n    text(\"- Played at strong amateur level\")\n\n    text(\"1955: Newell &amp; Simon\\'s Logic Theorist\")\n    text(\"- Used search + heuristics\")\n    text(\"- Came up with new proof for theorems in Principia Mathematica\")\n\n    text(\"Overwhelming optimism...\")\n    text(\"- Herbert Simon: *Machines will be capable, within twenty years, of doing any work a man can do.*\")\n    text(\"- Marvin Minsky: *Within 10 years the problems of artificial intelligence will be substantially solved.*\")\n    text(\"- Claude Shannon: *I visualize a time when we will be to robots what dogs are to humans, and I\\'m rooting for the machines.*\")\n\n    text(\"Underwhelming results...\")\n    text(\"Folklore example from machine translation:\")\n    text(\"- English: *The spirit is willing but the flesh is weak.*\")\n    text(\"- Russian: ...\")\n    text(\"- English: *The vodka is good but the meat is rotten.*\")\n    \n    text(\"1966: ALPAC report cut off government funding for machine translation, first AI winter \u2744\ufe0f\")\n\n    text(\"What went wrong?\")\n    text(\"Problems\")\n    text(\"- Limited computation: search space grew exponentially, outpacing hardware\")\n    text(\"- Limited information: complexity of AI problems (number of words, objects, concepts in the world)\")\n    text(\"Silver lining: useful contributions (John McCarthy)\")\n    text(\"- Lisp: advanced programming language\")\n    text(\"- Garbage collection: don't have to (de)allocate memory\")\n    text(\"- Time-sharing: allow multiple people to use the same computer at once\")\n\n    text(\"Knowledge-based systems (70-80s)\")\n  \n    text(\"Expert systems: elicit specific domain knowledge from experts in form of rules\"),\n    image(\"images/mycin-rule.png\")\n    text(\"Systems:\")\n    text(\"- DENDRAL: infer molecular structure from mass spectrometry\")\n    text(\"- MYCIN: diagnose blood infections, recommend antibiotics\")\n    text(\"- XCON: convert customer orders into parts specification\")\n\n    text(\"Wins:\")\n    text(\"- Knowledge helped both the information and computation gap\")\n    text(\"- First real application that impacted industry\")\n    text(\"Shortcomings:\")\n    text(\"- Deterministic rules couldn't handle the uncertainty of the real world\")\n    text(\"- Rules quickly became too complex to create and maintain\")\n\n    text(\"1987: Collapse of Lisp machines and second AI winter \u2744\ufe0f\")\n\n\ndef neural_ai():\n    text(\"Artificial neural networks\")\n    text(\"- 1943: artificial neural networks, relate neural circuitry and mathematical logic (McCulloch/Pitts)\")\n    text(\"- 1949: \\\"cells that fire together wire together\\\" learning rule (Hebb)\")\n    text(\"- 1958: Perceptron algorithm for linear classifiers (Rosenblatt)\")\n    text(\"- 1959: ADALINE device for linear regression (Widrow/Hoff)\")\n    text(\"- 1969: Perceptrons book showed that linear models could not solve XOR, killed neural nets research (Minsky/Papert)\")\n\n    text(\"Revival of connectionism\")\n    text(\"- 1980: Neocognitron, a.k.a. convolutional neural networks for images (Fukushima)\")\n    text(\"- 1986: popularization of backpropagation for training multi-layer networks (Rumelhardt, Hinton, Williams)\")\n    text(\"- 1989: applied convolutional neural networks to recognizing handwritten digits for USPS (LeCun)\")\n\n    text(\"Neural networks were hard to train and were unpopular in the 2000s\")\n\n    text(\"Deep learning\")\n    text(\"- 2006: unsupervised layerwise pre-training of deep networks (Hinton et al.)\")\n    text(\"- 2009: neural networks outperform Hidden Markov Models in speech recognition, transformed speech community\")\n    text(\"- 2012: AlexNet obtains huge gains in object recognition; transformed computer vision community\")\n    text(\"- 2014: sequence-to-sequence modeling (for machine translation) \"), link(\"https://arxiv.org/abs/1409.3215\")\n    text(\"- 2014: Adam optimizer \"), link(\"https://arxiv.org/abs/1412.6980\")\n    text(\"- 2015: Attention mechanism (for machine translation) \"), link(\"https://arxiv.org/abs/1409.0473\")\n    text(\"- 2016: AlphaGo uses deep reinforcement learning, defeat world champion Lee Sedol in Go\")\n    text(\"- 2017: Transformer architecture (for machine translation) \"), link(\"https://arxiv.org/abs/1706.03762\")\n\n\ndef statistical_ai():\n    text(\"Early ideas outside AI\")\n    text(\"- 1801: linear regression (Gauss, Legendre)\")\n    text(\"- 1936: linear classification (Fisher)\")\n    text(\"- 1951: stochastic gradient descent (Robbins/Monro)\")\n    text(\"- 1956: Uniform cost search for shortest paths (Dijkstra)\")\n    text(\"- 1957: Markov decision processes (Bellman)\")\n\n    text(\"Statistical machine learning\")\n    text(\"- 1985: Bayesian networks enabled reasoning under uncertainty (Pearl)\")\n    text(\"- 1995: support vector machines (Cortes/Vapnik) became popular in ML: easier to train, rooted in statistical learning theory\")\n    text(\"- 1999: variational inference was popularized by Jordan/Jaakkola\")\n    text(\"- 2001: conditional random fields allowed for predicting structures (Lafferty/McCallum/Pereira)\")\n    text(\"- 2003: topic modeling allowed for hierarchies and uncertainty over parameters (Blei/Ng/Jordan)\")\n\n\ndef foundation_models():\n    text(\"### Pretrained language models\")\n    text(\"- ELMo: pretraining with LSTMs, fine-tuning helps downstream tasks \"), link(\"https://arxiv.org/abs/1802.05365\")\n    text(\"- BERT: pretraining with Transformer, fine-tuning helps downstream tasks \"), link(\"https://arxiv.org/abs/1810.04805\")\n    text(\"- Google's T5 (11B): cast everything as text-to-text \"), link(\"https://arxiv.org/abs/1910.10683\")\n    image(\"images/t5.png\", width=400)\n\n    text(\"### Scaling up\")\n    text(\"- GPT-2: fluent text, first signs of zero-shot capabilities \"), link(\"https://cdn.openai.com/better-language-models/language_models_are_unsupervised_multitask_learners.pdf\", title=\"[Radford+ 2019]\")\n    text(\"- Scaling laws: provide hope / predictability for scaling \"), link(\"https://arxiv.org/abs/2001.08361\")\n    text(\"- GPT-3: in-context learning, closed \"), link(\"https://arxiv.org/abs/2005.14165\")\n    text(\"- Chinchilla: compute-optimal scaling laws \"), link(\"https://arxiv.org/abs/2005.14165\")\n    text(\"- Llama 3 \"), link(\"https://arxiv.org/abs/2407.21783\")\n    text(\"- DeepSeek v3 \"), link(\"https://arxiv.org/abs/2412.19437\")\n\n    text(\"### Reasoning\")\n    text(\"- Answering hard questions requires thinking\")\n    text(\"- Language models produce \\\"thoughts\\\" before producing a response\")\n    text(\"- Models: OpenAI's o1-o4, DeepSeek's r1\")\n\n    text(\"### Industrialization of AI\")\n    image(\"https://upload.wikimedia.org/wikipedia/commons/thumb/c/cc/Industrialisation.jpg/440px-Industrialisation.jpg\", width=400)\n    text(\"Tharunbr77, CC-BY-SA-4.0\")\n    text(\"GPT-4 supposedly has 1.8T parameters. \"), article_link(\"https://www.hpcwire.com/2024/03/19/the-generative-ai-future-is-now-nvidias-huang-says\")\n    text(\"GPT-4 supposedly cost $100M to train. \"), article_link(\"https://www.wired.com/story/openai-ceo-sam-altman-the-age-of-giant-ai-models-is-already-over/\")\n    text(\"xAI builds cluster with 200,000 H100s to train Grok. \"), article_link(\"https://www.tomshardware.com/pc-components/gpus/elon-musk-is-doubling-the-worlds-largest-ai-gpu-cluster-expanding-colossus-gpu-cluster-to-200-000-soon-has-floated-300-000-in-the-past\")\n    text(\"Stargate (OpenAI, NVIDIA, Oracle) invests $500B over 4 years. \"), article_link(\"https://openai.com/index/announcing-the-stargate-project/\")\n\n    text(\"There are no public details on how frontier models are built.\")\n    text(\"From the GPT-4 technical report \"), link(\"https://arxiv.org/abs/2303.08774\"), text(\":\")\n    image(\"images/gpt4-no-details.png\", width=600)\n\n    text(\"AI has emerged from research and now is shaping businesses and public policy.\")\n    text(\"The research is still far from done...\")\n\n\ndef parting_thoughts():\n    text(\"Fierce battles between the traditions\")\n    text(\"- Minsky/Papert promoted symbolic AI and killed neural networks research\")\n    text(\"- Statistical ML in the 2000s thought neural networks were dead\")\n\n    text(\"Deeper connections\")\n    text(\"- McCulloch/Pitts introduced artificial neural networks, but paper is about how to implement logical operations\")\n    text(\"- Go is defined purely using symbols, but deep neural networks are key to playing the game\")\n    text(\"- Deep learning was initially all about perception, but now turn to reasoning (goals of symbolic AI)\")\n\n    text(\"AI is a melting pot:\")\n    text(\"- Symbolic AI: provided the vision and ambition\")\n    text(\"- Neural AI: provided the model architectures\")\n    text(\"- Statistical AI: provided the rigor (e.g., optimization, generalization)\")\n\n    text(\"This class: we will see elements of all three traditions\")\n\n\nif __name__ == \"__main__\":\n    main()\n"
+    "history.py": "from edtrace import text, image, link\nfrom util import article_link\n\n\ndef main():\n    link(\"https://stanford-cs221.github.io/autumn2023/modules/module.html#include=general%2Fhistory.js&slideId=turing&level=0&mode=print6pp\", title=\"Slides from Autumn 2023\")\n\n    turing_test()\n\n    text(\"The history of AI is the story of three intellectual traditions:\")\n\n\n    symbolic_ai()\n    neural_ai()\n    statistical_ai()\n\n    foundation_models()\n    parting_thoughts()\n\n\ndef turing_test():\n    text(\"In 1950, this man:\")\n    image(\"images/alan-turing.jpg\", width=150)\n    text(\"published this paper:\")\n    image(\"images/turing-1950-paper.jpg\", width=300)\n\n    text(\"Alan Turing asked: \\\"Can machines think?\\\"\")\n    text(\"More basically: How could you tell?\")\n    text(\"His answer: Imitation Game (the Turing Test)\")\n    image(\"images/turing-test.jpg\", width=200)\n\n    text(\"Significance: ground philosophical question in objective measurement\")\n    text(\"Left open the solution: machine learning? logic?\")\n\n\ndef symbolic_ai():\n    text(\"1956: John McCarthy organized workshop at Dartmouth College\")\n    image(\"images/dartmouth.jpg\", width=100), text(\"Huangavin, CC-BY-3.0\") \n    text(\"- Convened the leading thinkers of the day (Shannon, Minsky, etc.)\")\n    text(\"- Goal was to make a \\\"significant advance\\\" in 2 months\")\n    text(\"- Coined the term \\\"artificial intelligence\\\"\")\n\n    text(\"1952: Arthur Samuel\\'s checkers playing program\")\n    text(\"- Weights were learned\")\n    text(\"- Played at strong amateur level\")\n\n    text(\"1955: Newell &amp; Simon\\'s Logic Theorist\")\n    text(\"- Used search + heuristics\")\n    text(\"- Came up with new proof for theorems in Principia Mathematica\")\n\n    text(\"Overwhelming optimism...\")\n    text(\"- Herbert Simon: *Machines will be capable, within twenty years, of doing any work a man can do.*\")\n    text(\"- Marvin Minsky: *Within 10 years the problems of artificial intelligence will be substantially solved.*\")\n    text(\"- Claude Shannon: *I visualize a time when we will be to robots what dogs are to humans, and I\\'m rooting for the machines.*\")\n\n    text(\"Underwhelming results...\")\n    text(\"Folklore example from machine translation:\")\n    text(\"- English: *The spirit is willing but the flesh is weak.*\")\n    text(\"- Russian: ...\")\n    text(\"- English: *The vodka is good but the meat is rotten.*\")\n    \n    text(\"1966: ALPAC report cut off government funding for machine translation, first AI winter \u2744\ufe0f\")\n\n    text(\"What went wrong?\")\n    text(\"Problems\")\n    text(\"- Limited computation: search space grew exponentially, outpacing hardware\")\n    text(\"- Limited information: complexity of AI problems (number of words, objects, concepts in the world)\")\n    text(\"Silver lining: useful contributions (John McCarthy)\")\n    text(\"- Lisp: advanced programming language\")\n    text(\"- Garbage collection: don't have to (de)allocate memory\")\n    text(\"- Time-sharing: allow multiple people to use the same computer at once\")\n\n    text(\"Knowledge-based systems (70-80s)\")\n  \n    text(\"Expert systems: elicit specific domain knowledge from experts in form of rules\"),\n    image(\"images/mycin-rule.png\")\n    text(\"Systems:\")\n    text(\"- DENDRAL: infer molecular structure from mass spectrometry\")\n    text(\"- MYCIN: diagnose blood infections, recommend antibiotics\")\n    text(\"- XCON: convert customer orders into parts specification\")\n\n    text(\"Wins:\")\n    text(\"- Knowledge helped both the information and computation gap\")\n    text(\"- First real application that impacted industry\")\n    text(\"Shortcomings:\")\n    text(\"- Deterministic rules couldn't handle the uncertainty of the real world\")\n    text(\"- Rules quickly became too complex to create and maintain\")\n\n    text(\"1987: Collapse of Lisp machines and second AI winter \u2744\ufe0f\")\n\n\ndef neural_ai():\n    text(\"Artificial neural networks\")\n    text(\"- 1943: artificial neural networks, relate neural circuitry and mathematical logic (McCulloch/Pitts)\")\n    text(\"- 1949: \\\"cells that fire together wire together\\\" learning rule (Hebb)\")\n    text(\"- 1958: Perceptron algorithm for linear classifiers (Rosenblatt)\")\n    text(\"- 1959: ADALINE device for linear regression (Widrow/Hoff)\")\n    text(\"- 1969: Perceptrons book showed that linear models could not solve XOR, killed neural nets research (Minsky/Papert)\")\n\n    text(\"Revival of connectionism\")\n    text(\"- 1980: Neocognitron, a.k.a. convolutional neural networks for images (Fukushima)\")\n    text(\"- 1986: popularization of backpropagation for training multi-layer networks (Rumelhardt, Hinton, Williams)\")\n    text(\"- 1989: applied convolutional neural networks to recognizing handwritten digits for USPS (LeCun)\")\n\n    text(\"Neural networks were hard to train and were unpopular in the 2000s\")\n\n    text(\"Deep learning\")\n    text(\"- 2006: unsupervised layerwise pre-training of deep networks (Hinton et al.)\")\n    text(\"- 2009: neural networks outperform Hidden Markov Models in speech recognition, transformed speech community\")\n    text(\"- 2012: AlexNet obtains huge gains in object recognition; transformed computer vision community\")\n    text(\"- 2014: sequence-to-sequence modeling (for machine translation) \"), link(\"https://arxiv.org/abs/1409.3215\")\n    text(\"- 2014: Adam optimizer \"), link(\"https://arxiv.org/abs/1412.6980\")\n    text(\"- 2015: Attention mechanism (for machine translation) \"), link(\"https://arxiv.org/abs/1409.0473\")\n    text(\"- 2016: AlphaGo uses deep reinforcement learning, defeat world champion Lee Sedol in Go\")\n    text(\"- 2017: Transformer architecture (for machine translation) \"), link(\"https://arxiv.org/abs/1706.03762\")\n\n\ndef statistical_ai():\n    text(\"Early ideas outside AI\")\n    text(\"- 1801: linear regression (Gauss, Legendre)\")\n    text(\"- 1936: linear classification (Fisher)\")\n    text(\"- 1951: stochastic gradient descent (Robbins/Monro)\")\n    text(\"- 1956: Uniform cost search for shortest paths (Dijkstra)\")\n    text(\"- 1957: Markov decision processes (Bellman)\")\n\n    text(\"Statistical machine learning\")\n    text(\"- 1985: Bayesian networks enabled reasoning under uncertainty (Pearl)\")\n    text(\"- 1995: support vector machines (Cortes/Vapnik) became popular in ML: easier to train, rooted in statistical learning theory\")\n    text(\"- 1999: variational inference was popularized by Jordan/Jaakkola\")\n    text(\"- 2001: conditional random fields allowed for predicting structures (Lafferty/McCallum/Pereira)\")\n    text(\"- 2003: topic modeling allowed for hierarchies and uncertainty over parameters (Blei/Ng/Jordan)\")\n\n\ndef foundation_models():\n    text(\"### Pretrained language models\")\n    text(\"- ELMo: pretraining with LSTMs, fine-tuning helps downstream tasks \"), link(\"https://arxiv.org/abs/1802.05365\")\n    text(\"- BERT: pretraining with Transformer, fine-tuning helps downstream tasks \"), link(\"https://arxiv.org/abs/1810.04805\")\n    text(\"- Google's T5 (11B): cast everything as text-to-text \"), link(\"https://arxiv.org/abs/1910.10683\")\n    image(\"images/t5.png\", width=400)\n\n    text(\"### Scaling up\")\n    text(\"- GPT-2: fluent text, first signs of zero-shot capabilities \"), link(\"https://cdn.openai.com/better-language-models/language_models_are_unsupervised_multitask_learners.pdf\", title=\"[Radford+ 2019]\")\n    text(\"- Scaling laws: provide hope / predictability for scaling \"), link(\"https://arxiv.org/abs/2001.08361\")\n    text(\"- GPT-3: in-context learning, closed \"), link(\"https://arxiv.org/abs/2005.14165\")\n    text(\"- Chinchilla: compute-optimal scaling laws \"), link(\"https://arxiv.org/abs/2005.14165\")\n    text(\"- Llama 3 \"), link(\"https://arxiv.org/abs/2407.21783\")\n    text(\"- DeepSeek v3 \"), link(\"https://arxiv.org/abs/2412.19437\")\n\n    text(\"### Reasoning\")\n    text(\"- Answering hard questions requires thinking\")\n    text(\"- Language models produce \\\"thoughts\\\" before producing a response\")\n    text(\"- Models: OpenAI's o1-o4, DeepSeek's r1\")\n\n    text(\"### Industrialization of AI\")\n    image(\"https://upload.wikimedia.org/wikipedia/commons/thumb/c/cc/Industrialisation.jpg/440px-Industrialisation.jpg\", width=400), text(\"Tharunbr77, CC-BY-SA-4.0\")\n    \n    text(\"GPT-4 supposedly has 1.8T parameters. \"), article_link(\"https://www.hpcwire.com/2024/03/19/the-generative-ai-future-is-now-nvidias-huang-says\")\n    text(\"GPT-4 supposedly cost $100M to train. \"), article_link(\"https://www.wired.com/story/openai-ceo-sam-altman-the-age-of-giant-ai-models-is-already-over/\")\n    text(\"xAI builds cluster with 200,000 H100s to train Grok. \"), article_link(\"https://www.tomshardware.com/pc-components/gpus/elon-musk-is-doubling-the-worlds-largest-ai-gpu-cluster-expanding-colossus-gpu-cluster-to-200-000-soon-has-floated-300-000-in-the-past\")\n    text(\"Stargate (OpenAI, NVIDIA, Oracle) invests $500B over 4 years. \"), article_link(\"https://openai.com/index/announcing-the-stargate-project/\")\n\n    text(\"There are no public details on how frontier models are built.\")\n    text(\"From the GPT-4 technical report \"), link(\"https://arxiv.org/abs/2303.08774\"), text(\":\")\n    image(\"images/gpt4-no-details.png\", width=600)\n\n    text(\"AI has emerged from research and now is shaping businesses and public policy.\")\n    text(\"The research is still far from done...\")\n\n\ndef parting_thoughts():\n    text(\"Fierce battles between the traditions\")\n    text(\"- Minsky/Papert promoted symbolic AI and killed neural networks research\")\n    text(\"- Statistical ML in the 2000s thought neural networks were dead\")\n\n    text(\"Deeper connections\")\n    text(\"- McCulloch/Pitts introduced artificial neural networks, but paper is about how to implement logical operations\")\n    text(\"- Go is defined purely using symbols, but deep neural networks are key to playing the game\")\n    text(\"- Deep learning was initially all about perception, but now turn to reasoning (goals of symbolic AI)\")\n\n    text(\"AI is a melting pot:\")\n    text(\"- Symbolic AI: provided the vision and ambition\")\n    text(\"- Neural AI: provided the model architectures\")\n    text(\"- Statistical AI: provided the rigor (e.g., optimization, generalization)\")\n\n    text(\"This class: we will see elements of all three traditions\")\n\n\nif __name__ == \"__main__\":\n    main()"
   },
   "hidden_line_numbers": {
     "history.py": []
@@ -68,7 +68,7 @@
         },
         {
           "path": "history.py",
-          "line_number": 20,
+          "line_number": 21,
           "function_name": "turing_test",
           "code": "def turing_test():"
         }
@@ -86,7 +86,7 @@
         },
         {
           "path": "history.py",
-          "line_number": 21,
+          "line_number": 22,
           "function_name": "turing_test",
           "code": "text(\"In 1950, this man:\")"
         }
@@ -112,7 +112,7 @@
         },
         {
           "path": "history.py",
-          "line_number": 22,
+          "line_number": 23,
           "function_name": "turing_test",
           "code": "image(\"images/alan-turing.jpg\", width=150)"
         }
@@ -140,7 +140,7 @@
         },
         {
           "path": "history.py",
-          "line_number": 23,
+          "line_number": 24,
           "function_name": "turing_test",
           "code": "text(\"published this paper:\")"
         }
@@ -166,7 +166,7 @@
         },
         {
           "path": "history.py",
-          "line_number": 24,
+          "line_number": 25,
           "function_name": "turing_test",
           "code": "image(\"images/turing-1950-paper.jpg\", width=300)"
         }
@@ -194,7 +194,7 @@
         },
         {
           "path": "history.py",
-          "line_number": 26,
+          "line_number": 27,
           "function_name": "turing_test",
           "code": "text(\"Alan Turing asked: \\\"Can machines think?\\\"\")"
         }
@@ -220,7 +220,7 @@
         },
         {
           "path": "history.py",
-          "line_number": 27,
+          "line_number": 28,
           "function_name": "turing_test",
           "code": "text(\"More basically: How could you tell?\")"
         }
@@ -246,7 +246,7 @@
         },
         {
           "path": "history.py",
-          "line_number": 28,
+          "line_number": 29,
           "function_name": "turing_test",
           "code": "text(\"His answer: Imitation Game (the Turing Test)\")"
         }
@@ -272,7 +272,7 @@
         },
         {
           "path": "history.py",
-          "line_number": 29,
+          "line_number": 30,
           "function_name": "turing_test",
           "code": "image(\"images/turing-test.jpg\", width=200)"
         }
@@ -300,7 +300,7 @@
         },
         {
           "path": "history.py",
-          "line_number": 31,
+          "line_number": 32,
           "function_name": "turing_test",
           "code": "text(\"Significance: ground philosophical question in objective measurement\")"
         }
@@ -326,7 +326,7 @@
         },
         {
           "path": "history.py",
-          "line_number": 32,
+          "line_number": 33,
           "function_name": "turing_test",
           "code": "text(\"Left open the solution: machine learning? logic?\")"
         }
@@ -378,7 +378,7 @@
       "stack": [
         {
           "path": "history.py",
-          "line_number": 12,
+          "line_number": 13,
           "function_name": "main",
           "code": "symbolic_ai()"
         }
@@ -390,13 +390,13 @@
       "stack": [
         {
           "path": "history.py",
-          "line_number": 12,
+          "line_number": 13,
           "function_name": "main",
           "code": "symbolic_ai()"
         },
         {
           "path": "history.py",
-          "line_number": 35,
+          "line_number": 36,
           "function_name": "symbolic_ai",
           "code": "def symbolic_ai():"
         }
@@ -408,13 +408,13 @@
       "stack": [
         {
           "path": "history.py",
-          "line_number": 12,
+          "line_number": 13,
           "function_name": "main",
           "code": "symbolic_ai()"
         },
         {
           "path": "history.py",
-          "line_number": 36,
+          "line_number": 37,
           "function_name": "symbolic_ai",
           "code": "text(\"1956: John McCarthy organized workshop at Dartmouth College\")"
         }
@@ -434,15 +434,15 @@
       "stack": [
         {
           "path": "history.py",
-          "line_number": 12,
+          "line_number": 13,
           "function_name": "main",
           "code": "symbolic_ai()"
         },
         {
           "path": "history.py",
-          "line_number": 37,
+          "line_number": 38,
           "function_name": "symbolic_ai",
-          "code": "image(\"images/dartmouth.jpg\", width=100)"
+          "code": "image(\"images/dartmouth.jpg\", width=100), text(\"Huangavin, CC-BY-3.0\")"
         }
       ],
       "env": {},
@@ -455,26 +455,7 @@
           },
           "external_link": null,
           "internal_link": null
-        }
-      ]
-    },
-    {
-      "stack": [
-        {
-          "path": "history.py",
-          "line_number": 12,
-          "function_name": "main",
-          "code": "symbolic_ai()"
         },
-        {
-          "path": "history.py",
-          "line_number": 38,
-          "function_name": "symbolic_ai",
-          "code": "text(\"Huangavin, CC-BY-3.0\")"
-        }
-      ],
-      "env": {},
-      "renderings": [
         {
           "type": "markdown",
           "data": "Huangavin, CC-BY-3.0",
@@ -488,7 +469,7 @@
       "stack": [
         {
           "path": "history.py",
-          "line_number": 12,
+          "line_number": 13,
           "function_name": "main",
           "code": "symbolic_ai()"
         },
@@ -514,7 +495,7 @@
       "stack": [
         {
           "path": "history.py",
-          "line_number": 12,
+          "line_number": 13,
           "function_name": "main",
           "code": "symbolic_ai()"
         },
@@ -540,7 +521,7 @@
       "stack": [
         {
           "path": "history.py",
-          "line_number": 12,
+          "line_number": 13,
           "function_name": "main",
           "code": "symbolic_ai()"
         },
@@ -566,7 +547,7 @@
       "stack": [
         {
           "path": "history.py",
-          "line_number": 12,
+          "line_number": 13,
           "function_name": "main",
           "code": "symbolic_ai()"
         },
@@ -592,7 +573,7 @@
       "stack": [
         {
           "path": "history.py",
-          "line_number": 12,
+          "line_number": 13,
           "function_name": "main",
           "code": "symbolic_ai()"
         },
@@ -618,7 +599,7 @@
       "stack": [
         {
           "path": "history.py",
-          "line_number": 12,
+          "line_number": 13,
           "function_name": "main",
           "code": "symbolic_ai()"
         },
@@ -644,7 +625,7 @@
       "stack": [
         {
           "path": "history.py",
-          "line_number": 12,
+          "line_number": 13,
           "function_name": "main",
           "code": "symbolic_ai()"
         },
@@ -670,7 +651,7 @@
       "stack": [
         {
           "path": "history.py",
-          "line_number": 12,
+          "line_number": 13,
           "function_name": "main",
           "code": "symbolic_ai()"
         },
@@ -696,7 +677,7 @@
       "stack": [
         {
           "path": "history.py",
-          "line_number": 12,
+          "line_number": 13,
           "function_name": "main",
           "code": "symbolic_ai()"
         },
@@ -722,7 +703,7 @@
       "stack": [
         {
           "path": "history.py",
-          "line_number": 12,
+          "line_number": 13,
           "function_name": "main",
           "code": "symbolic_ai()"
         },
@@ -748,7 +729,7 @@
       "stack": [
         {
           "path": "history.py",
-          "line_number": 12,
+          "line_number": 13,
           "function_name": "main",
           "code": "symbolic_ai()"
         },
@@ -774,7 +755,7 @@
       "stack": [
         {
           "path": "history.py",
-          "line_number": 12,
+          "line_number": 13,
           "function_name": "main",
           "code": "symbolic_ai()"
         },
@@ -800,7 +781,7 @@
       "stack": [
         {
           "path": "history.py",
-          "line_number": 12,
+          "line_number": 13,
           "function_name": "main",
           "code": "symbolic_ai()"
         },
@@ -826,7 +807,7 @@
       "stack": [
         {
           "path": "history.py",
-          "line_number": 12,
+          "line_number": 13,
           "function_name": "main",
           "code": "symbolic_ai()"
         },
@@ -852,7 +833,7 @@
       "stack": [
         {
           "path": "history.py",
-          "line_number": 12,
+          "line_number": 13,
           "function_name": "main",
           "code": "symbolic_ai()"
         },
@@ -878,7 +859,7 @@
       "stack": [
         {
           "path": "history.py",
-          "line_number": 12,
+          "line_number": 13,
           "function_name": "main",
           "code": "symbolic_ai()"
         },
@@ -904,7 +885,7 @@
       "stack": [
         {
           "path": "history.py",
-          "line_number": 12,
+          "line_number": 13,
           "function_name": "main",
           "code": "symbolic_ai()"
         },
@@ -930,7 +911,7 @@
       "stack": [
         {
           "path": "history.py",
-          "line_number": 12,
+          "line_number": 13,
           "function_name": "main",
           "code": "symbolic_ai()"
         },
@@ -956,7 +937,7 @@
       "stack": [
         {
           "path": "history.py",
-          "line_number": 12,
+          "line_number": 13,
           "function_name": "main",
           "code": "symbolic_ai()"
         },
@@ -982,7 +963,7 @@
       "stack": [
         {
           "path": "history.py",
-          "line_number": 12,
+          "line_number": 13,
           "function_name": "main",
           "code": "symbolic_ai()"
         },
@@ -1008,7 +989,7 @@
       "stack": [
         {
           "path": "history.py",
-          "line_number": 12,
+          "line_number": 13,
           "function_name": "main",
           "code": "symbolic_ai()"
         },
@@ -1034,7 +1015,7 @@
       "stack": [
         {
           "path": "history.py",
-          "line_number": 12,
+          "line_number": 13,
           "function_name": "main",
           "code": "symbolic_ai()"
         },
@@ -1060,7 +1041,7 @@
       "stack": [
         {
           "path": "history.py",
-          "line_number": 12,
+          "line_number": 13,
           "function_name": "main",
           "code": "symbolic_ai()"
         },
@@ -1086,7 +1067,7 @@
       "stack": [
         {
           "path": "history.py",
-          "line_number": 12,
+          "line_number": 13,
           "function_name": "main",
           "code": "symbolic_ai()"
         },
@@ -1112,7 +1093,7 @@
       "stack": [
         {
           "path": "history.py",
-          "line_number": 12,
+          "line_number": 13,
           "function_name": "main",
           "code": "symbolic_ai()"
         },
@@ -1138,7 +1119,7 @@
       "stack": [
         {
           "path": "history.py",
-          "line_number": 12,
+          "line_number": 13,
           "function_name": "main",
           "code": "symbolic_ai()"
         },
@@ -1164,7 +1145,7 @@
       "stack": [
         {
           "path": "history.py",
-          "line_number": 12,
+          "line_number": 13,
           "function_name": "main",
           "code": "symbolic_ai()"
         },
@@ -1190,7 +1171,7 @@
       "stack": [
         {
           "path": "history.py",
-          "line_number": 12,
+          "line_number": 13,
           "function_name": "main",
           "code": "symbolic_ai()"
         },
@@ -1216,7 +1197,7 @@
       "stack": [
         {
           "path": "history.py",
-          "line_number": 12,
+          "line_number": 13,
           "function_name": "main",
           "code": "symbolic_ai()"
         },
@@ -1242,7 +1223,7 @@
       "stack": [
         {
           "path": "history.py",
-          "line_number": 12,
+          "line_number": 13,
           "function_name": "main",
           "code": "symbolic_ai()"
         },
@@ -1268,7 +1249,7 @@
       "stack": [
         {
           "path": "history.py",
-          "line_number": 12,
+          "line_number": 13,
           "function_name": "main",
           "code": "symbolic_ai()"
         },
@@ -1294,7 +1275,7 @@
       "stack": [
         {
           "path": "history.py",
-          "line_number": 12,
+          "line_number": 13,
           "function_name": "main",
           "code": "symbolic_ai()"
         },
@@ -1320,7 +1301,7 @@
       "stack": [
         {
           "path": "history.py",
-          "line_number": 12,
+          "line_number": 13,
           "function_name": "main",
           "code": "symbolic_ai()"
         },
@@ -1346,7 +1327,7 @@
       "stack": [
         {
           "path": "history.py",
-          "line_number": 12,
+          "line_number": 13,
           "function_name": "main",
           "code": "symbolic_ai()"
         },
@@ -1372,7 +1353,7 @@
       "stack": [
         {
           "path": "history.py",
-          "line_number": 12,
+          "line_number": 13,
           "function_name": "main",
           "code": "symbolic_ai()"
         },
@@ -1398,7 +1379,7 @@
       "stack": [
         {
           "path": "history.py",
-          "line_number": 12,
+          "line_number": 13,
           "function_name": "main",
           "code": "symbolic_ai()"
         },
@@ -1424,7 +1405,7 @@
       "stack": [
         {
           "path": "history.py",
-          "line_number": 12,
+          "line_number": 13,
           "function_name": "main",
           "code": "symbolic_ai()"
         },
@@ -1450,7 +1431,7 @@
       "stack": [
         {
           "path": "history.py",
-          "line_number": 12,
+          "line_number": 13,
           "function_name": "main",
           "code": "symbolic_ai()"
         },
@@ -1476,7 +1457,7 @@
       "stack": [
         {
           "path": "history.py",
-          "line_number": 12,
+          "line_number": 13,
           "function_name": "main",
           "code": "symbolic_ai()"
         },
@@ -1502,7 +1483,7 @@
       "stack": [
         {
           "path": "history.py",
-          "line_number": 12,
+          "line_number": 13,
           "function_name": "main",
           "code": "symbolic_ai()"
         },
@@ -1528,7 +1509,7 @@
       "stack": [
         {
           "path": "history.py",
-          "line_number": 12,
+          "line_number": 13,
           "function_name": "main",
           "code": "symbolic_ai()"
         },
@@ -1554,7 +1535,7 @@
       "stack": [
         {
           "path": "history.py",
-          "line_number": 12,
+          "line_number": 13,
           "function_name": "main",
           "code": "symbolic_ai()"
         }
@@ -1566,7 +1547,7 @@
       "stack": [
         {
           "path": "history.py",
-          "line_number": 13,
+          "line_number": 14,
           "function_name": "main",
           "code": "neural_ai()"
         }
@@ -1578,7 +1559,7 @@
       "stack": [
         {
           "path": "history.py",
-          "line_number": 13,
+          "line_number": 14,
           "function_name": "main",
           "code": "neural_ai()"
         },
@@ -1596,7 +1577,7 @@
       "stack": [
         {
           "path": "history.py",
-          "line_number": 13,
+          "line_number": 14,
           "function_name": "main",
           "code": "neural_ai()"
         },
@@ -1622,7 +1603,7 @@
       "stack": [
         {
           "path": "history.py",
-          "line_number": 13,
+          "line_number": 14,
           "function_name": "main",
           "code": "neural_ai()"
         },
@@ -1648,7 +1629,7 @@
       "stack": [
         {
           "path": "history.py",
-          "line_number": 13,
+          "line_number": 14,
           "function_name": "main",
           "code": "neural_ai()"
         },
@@ -1674,7 +1655,7 @@
       "stack": [
         {
           "path": "history.py",
-          "line_number": 13,
+          "line_number": 14,
           "function_name": "main",
           "code": "neural_ai()"
         },
@@ -1700,7 +1681,7 @@
       "stack": [
         {
           "path": "history.py",
-          "line_number": 13,
+          "line_number": 14,
           "function_name": "main",
           "code": "neural_ai()"
         },
@@ -1726,7 +1707,7 @@
       "stack": [
         {
           "path": "history.py",
-          "line_number": 13,
+          "line_number": 14,
           "function_name": "main",
           "code": "neural_ai()"
         },
@@ -1752,7 +1733,7 @@
       "stack": [
         {
           "path": "history.py",
-          "line_number": 13,
+          "line_number": 14,
           "function_name": "main",
           "code": "neural_ai()"
         },
@@ -1778,7 +1759,7 @@
       "stack": [
         {
           "path": "history.py",
-          "line_number": 13,
+          "line_number": 14,
           "function_name": "main",
           "code": "neural_ai()"
         },
@@ -1804,7 +1785,7 @@
       "stack": [
         {
           "path": "history.py",
-          "line_number": 13,
+          "line_number": 14,
           "function_name": "main",
           "code": "neural_ai()"
         },
@@ -1830,7 +1811,7 @@
       "stack": [
         {
           "path": "history.py",
-          "line_number": 13,
+          "line_number": 14,
           "function_name": "main",
           "code": "neural_ai()"
         },
@@ -1856,7 +1837,7 @@
       "stack": [
         {
           "path": "history.py",
-          "line_number": 13,
+          "line_number": 14,
           "function_name": "main",
           "code": "neural_ai()"
         },
@@ -1882,7 +1863,7 @@
       "stack": [
         {
           "path": "history.py",
-          "line_number": 13,
+          "line_number": 14,
           "function_name": "main",
           "code": "neural_ai()"
         },
@@ -1908,7 +1889,7 @@
       "stack": [
         {
           "path": "history.py",
-          "line_number": 13,
+          "line_number": 14,
           "function_name": "main",
           "code": "neural_ai()"
         },
@@ -1934,7 +1915,7 @@
       "stack": [
         {
           "path": "history.py",
-          "line_number": 13,
+          "line_number": 14,
           "function_name": "main",
           "code": "neural_ai()"
         },
@@ -1960,7 +1941,7 @@
       "stack": [
         {
           "path": "history.py",
-          "line_number": 13,
+          "line_number": 14,
           "function_name": "main",
           "code": "neural_ai()"
         },
@@ -1986,7 +1967,7 @@
       "stack": [
         {
           "path": "history.py",
-          "line_number": 13,
+          "line_number": 14,
           "function_name": "main",
           "code": "neural_ai()"
         },
@@ -2031,7 +2012,7 @@
       "stack": [
         {
           "path": "history.py",
-          "line_number": 13,
+          "line_number": 14,
           "function_name": "main",
           "code": "neural_ai()"
         },
@@ -2075,7 +2056,7 @@
       "stack": [
         {
           "path": "history.py",
-          "line_number": 13,
+          "line_number": 14,
           "function_name": "main",
           "code": "neural_ai()"
         },
@@ -2120,7 +2101,7 @@
       "stack": [
         {
           "path": "history.py",
-          "line_number": 13,
+          "line_number": 14,
           "function_name": "main",
           "code": "neural_ai()"
         },
@@ -2146,7 +2127,7 @@
       "stack": [
         {
           "path": "history.py",
-          "line_number": 13,
+          "line_number": 14,
           "function_name": "main",
           "code": "neural_ai()"
         },
@@ -2196,7 +2177,7 @@
       "stack": [
         {
           "path": "history.py",
-          "line_number": 13,
+          "line_number": 14,
           "function_name": "main",
           "code": "neural_ai()"
         }
@@ -2208,7 +2189,7 @@
       "stack": [
         {
           "path": "history.py",
-          "line_number": 14,
+          "line_number": 15,
           "function_name": "main",
           "code": "statistical_ai()"
         }
@@ -2220,7 +2201,7 @@
       "stack": [
         {
           "path": "history.py",
-          "line_number": 14,
+          "line_number": 15,
           "function_name": "main",
           "code": "statistical_ai()"
         },
@@ -2238,7 +2219,7 @@
       "stack": [
         {
           "path": "history.py",
-          "line_number": 14,
+          "line_number": 15,
           "function_name": "main",
           "code": "statistical_ai()"
         },
@@ -2264,7 +2245,7 @@
       "stack": [
         {
           "path": "history.py",
-          "line_number": 14,
+          "line_number": 15,
           "function_name": "main",
           "code": "statistical_ai()"
         },
@@ -2290,7 +2271,7 @@
       "stack": [
         {
           "path": "history.py",
-          "line_number": 14,
+          "line_number": 15,
           "function_name": "main",
           "code": "statistical_ai()"
         },
@@ -2316,7 +2297,7 @@
       "stack": [
         {
           "path": "history.py",
-          "line_number": 14,
+          "line_number": 15,
           "function_name": "main",
           "code": "statistical_ai()"
         },
@@ -2342,7 +2323,7 @@
       "stack": [
         {
           "path": "history.py",
-          "line_number": 14,
+          "line_number": 15,
           "function_name": "main",
           "code": "statistical_ai()"
         },
@@ -2368,7 +2349,7 @@
       "stack": [
         {
           "path": "history.py",
-          "line_number": 14,
+          "line_number": 15,
           "function_name": "main",
           "code": "statistical_ai()"
         },
@@ -2394,7 +2375,7 @@
       "stack": [
         {
           "path": "history.py",
-          "line_number": 14,
+          "line_number": 15,
           "function_name": "main",
           "code": "statistical_ai()"
         },
@@ -2420,7 +2401,7 @@
       "stack": [
         {
           "path": "history.py",
-          "line_number": 14,
+          "line_number": 15,
           "function_name": "main",
           "code": "statistical_ai()"
         },
@@ -2446,7 +2427,7 @@
       "stack": [
         {
           "path": "history.py",
-          "line_number": 14,
+          "line_number": 15,
           "function_name": "main",
           "code": "statistical_ai()"
         },
@@ -2472,7 +2453,7 @@
       "stack": [
         {
           "path": "history.py",
-          "line_number": 14,
+          "line_number": 15,
           "function_name": "main",
           "code": "statistical_ai()"
         },
@@ -2498,7 +2479,7 @@
       "stack": [
         {
           "path": "history.py",
-          "line_number": 14,
+          "line_number": 15,
           "function_name": "main",
           "code": "statistical_ai()"
         },
@@ -2524,7 +2505,7 @@
       "stack": [
         {
           "path": "history.py",
-          "line_number": 14,
+          "line_number": 15,
           "function_name": "main",
           "code": "statistical_ai()"
         },
@@ -2550,7 +2531,7 @@
       "stack": [
         {
           "path": "history.py",
-          "line_number": 14,
+          "line_number": 15,
           "function_name": "main",
           "code": "statistical_ai()"
         }
@@ -2562,7 +2543,7 @@
       "stack": [
         {
           "path": "history.py",
-          "line_number": 16,
+          "line_number": 17,
           "function_name": "main",
           "code": "foundation_models()"
         }
@@ -2574,7 +2555,7 @@
       "stack": [
         {
           "path": "history.py",
-          "line_number": 16,
+          "line_number": 17,
           "function_name": "main",
           "code": "foundation_models()"
         },
@@ -2592,7 +2573,7 @@
       "stack": [
         {
           "path": "history.py",
-          "line_number": 16,
+          "line_number": 17,
           "function_name": "main",
           "code": "foundation_models()"
         },
@@ -2618,7 +2599,7 @@
       "stack": [
         {
           "path": "history.py",
-          "line_number": 16,
+          "line_number": 17,
           "function_name": "main",
           "code": "foundation_models()"
         },
@@ -2667,7 +2648,7 @@
       "stack": [
         {
           "path": "history.py",
-          "line_number": 16,
+          "line_number": 17,
           "function_name": "main",
           "code": "foundation_models()"
         },
@@ -2713,7 +2694,7 @@
       "stack": [
         {
           "path": "history.py",
-          "line_number": 16,
+          "line_number": 17,
           "function_name": "main",
           "code": "foundation_models()"
         },
@@ -2764,7 +2745,7 @@
       "stack": [
         {
           "path": "history.py",
-          "line_number": 16,
+          "line_number": 17,
           "function_name": "main",
           "code": "foundation_models()"
         },
@@ -2792,7 +2773,7 @@
       "stack": [
         {
           "path": "history.py",
-          "line_number": 16,
+          "line_number": 17,
           "function_name": "main",
           "code": "foundation_models()"
         },
@@ -2818,7 +2799,7 @@
       "stack": [
         {
           "path": "history.py",
-          "line_number": 16,
+          "line_number": 17,
           "function_name": "main",
           "code": "foundation_models()"
         },
@@ -2859,7 +2840,7 @@
       "stack": [
         {
           "path": "history.py",
-          "line_number": 16,
+          "line_number": 17,
           "function_name": "main",
           "code": "foundation_models()"
         },
@@ -2911,7 +2892,7 @@
       "stack": [
         {
           "path": "history.py",
-          "line_number": 16,
+          "line_number": 17,
           "function_name": "main",
           "code": "foundation_models()"
         },
@@ -2984,7 +2965,7 @@
       "stack": [
         {
           "path": "history.py",
-          "line_number": 16,
+          "line_number": 17,
           "function_name": "main",
           "code": "foundation_models()"
         },
@@ -3057,7 +3038,7 @@
       "stack": [
         {
           "path": "history.py",
-          "line_number": 16,
+          "line_number": 17,
           "function_name": "main",
           "code": "foundation_models()"
         },
@@ -3660,7 +3641,7 @@
       "stack": [
         {
           "path": "history.py",
-          "line_number": 16,
+          "line_number": 17,
           "function_name": "main",
           "code": "foundation_models()"
         },
@@ -3902,7 +3883,7 @@
       "stack": [
         {
           "path": "history.py",
-          "line_number": 16,
+          "line_number": 17,
           "function_name": "main",
           "code": "foundation_models()"
         },
@@ -3928,7 +3909,7 @@
       "stack": [
         {
           "path": "history.py",
-          "line_number": 16,
+          "line_number": 17,
           "function_name": "main",
           "code": "foundation_models()"
         },
@@ -3954,7 +3935,7 @@
       "stack": [
         {
           "path": "history.py",
-          "line_number": 16,
+          "line_number": 17,
           "function_name": "main",
           "code": "foundation_models()"
         },
@@ -3980,7 +3961,7 @@
       "stack": [
         {
           "path": "history.py",
-          "line_number": 16,
+          "line_number": 17,
           "function_name": "main",
           "code": "foundation_models()"
         },
@@ -4006,7 +3987,7 @@
       "stack": [
         {
           "path": "history.py",
-          "line_number": 16,
+          "line_number": 17,
           "function_name": "main",
           "code": "foundation_models()"
         },
@@ -4032,7 +4013,7 @@
       "stack": [
         {
           "path": "history.py",
-          "line_number": 16,
+          "line_number": 17,
           "function_name": "main",
           "code": "foundation_models()"
         },
@@ -4040,7 +4021,7 @@
           "path": "history.py",
           "line_number": 155,
           "function_name": "foundation_models",
-          "code": "image(\"https://upload.wikimedia.org/wikipedia/commons/thumb/c/cc/Industrialisation.jpg/440px-Industrialisation.jpg\", width=400)"
+          "code": "image(\"https://upload.wikimedia.org/wikipedia/commons/thumb/c/cc/Industrialisation.jpg/440px-Industrialisation.jpg\", width=400), text(\"Tharunbr77, CC-BY-SA-4.0\")"
         }
       ],
       "env": {},
@@ -4053,26 +4034,7 @@
           },
           "external_link": null,
           "internal_link": null
-        }
-      ]
-    },
-    {
-      "stack": [
-        {
-          "path": "history.py",
-          "line_number": 16,
-          "function_name": "main",
-          "code": "foundation_models()"
         },
-        {
-          "path": "history.py",
-          "line_number": 156,
-          "function_name": "foundation_models",
-          "code": "text(\"Tharunbr77, CC-BY-SA-4.0\")"
-        }
-      ],
-      "env": {},
-      "renderings": [
         {
           "type": "markdown",
           "data": "Tharunbr77, CC-BY-SA-4.0",
@@ -4086,7 +4048,7 @@
       "stack": [
         {
           "path": "history.py",
-          "line_number": 16,
+          "line_number": 17,
           "function_name": "main",
           "code": "foundation_models()"
         },
@@ -4127,7 +4089,7 @@
       "stack": [
         {
           "path": "history.py",
-          "line_number": 16,
+          "line_number": 17,
           "function_name": "main",
           "code": "foundation_models()"
         },
@@ -4168,7 +4130,7 @@
       "stack": [
         {
           "path": "history.py",
-          "line_number": 16,
+          "line_number": 17,
           "function_name": "main",
           "code": "foundation_models()"
         },
@@ -4209,7 +4171,7 @@
       "stack": [
         {
           "path": "history.py",
-          "line_number": 16,
+          "line_number": 17,
           "function_name": "main",
           "code": "foundation_models()"
         },
@@ -4250,7 +4212,7 @@
       "stack": [
         {
           "path": "history.py",
-          "line_number": 16,
+          "line_number": 17,
           "function_name": "main",
           "code": "foundation_models()"
         },
@@ -4276,7 +4238,7 @@
       "stack": [
         {
           "path": "history.py",
-          "line_number": 16,
+          "line_number": 17,
           "function_name": "main",
           "code": "foundation_models()"
         },
@@ -4606,7 +4568,7 @@
       "stack": [
         {
           "path": "history.py",
-          "line_number": 16,
+          "line_number": 17,
           "function_name": "main",
           "code": "foundation_models()"
         },
@@ -4634,7 +4596,7 @@
       "stack": [
         {
           "path": "history.py",
-          "line_number": 16,
+          "line_number": 17,
           "function_name": "main",
           "code": "foundation_models()"
         },
@@ -4660,7 +4622,7 @@
       "stack": [
         {
           "path": "history.py",
-          "line_number": 16,
+          "line_number": 17,
           "function_name": "main",
           "code": "foundation_models()"
         },
@@ -4686,7 +4648,7 @@
       "stack": [
         {
           "path": "history.py",
-          "line_number": 16,
+          "line_number": 17,
           "function_name": "main",
           "code": "foundation_models()"
         }
@@ -4698,7 +4660,7 @@
       "stack": [
         {
           "path": "history.py",
-          "line_number": 17,
+          "line_number": 18,
           "function_name": "main",
           "code": "parting_thoughts()"
         }
@@ -4710,7 +4672,7 @@
       "stack": [
         {
           "path": "history.py",
-          "line_number": 17,
+          "line_number": 18,
           "function_name": "main",
           "code": "parting_thoughts()"
         },
@@ -4728,7 +4690,7 @@
       "stack": [
         {
           "path": "history.py",
-          "line_number": 17,
+          "line_number": 18,
           "function_name": "main",
           "code": "parting_thoughts()"
         },
@@ -4754,7 +4716,7 @@
       "stack": [
         {
           "path": "history.py",
-          "line_number": 17,
+          "line_number": 18,
           "function_name": "main",
           "code": "parting_thoughts()"
         },
@@ -4780,7 +4742,7 @@
       "stack": [
         {
           "path": "history.py",
-          "line_number": 17,
+          "line_number": 18,
           "function_name": "main",
           "code": "parting_thoughts()"
         },
@@ -4806,7 +4768,7 @@
       "stack": [
         {
           "path": "history.py",
-          "line_number": 17,
+          "line_number": 18,
           "function_name": "main",
           "code": "parting_thoughts()"
         },
@@ -4832,7 +4794,7 @@
       "stack": [
         {
           "path": "history.py",
-          "line_number": 17,
+          "line_number": 18,
           "function_name": "main",
           "code": "parting_thoughts()"
         },
@@ -4858,7 +4820,7 @@
       "stack": [
         {
           "path": "history.py",
-          "line_number": 17,
+          "line_number": 18,
           "function_name": "main",
           "code": "parting_thoughts()"
         },
@@ -4884,7 +4846,7 @@
       "stack": [
         {
           "path": "history.py",
-          "line_number": 17,
+          "line_number": 18,
           "function_name": "main",
           "code": "parting_thoughts()"
         },
@@ -4910,7 +4872,7 @@
       "stack": [
         {
           "path": "history.py",
-          "line_number": 17,
+          "line_number": 18,
           "function_name": "main",
           "code": "parting_thoughts()"
         },
@@ -4936,7 +4898,7 @@
       "stack": [
         {
           "path": "history.py",
-          "line_number": 17,
+          "line_number": 18,
           "function_name": "main",
           "code": "parting_thoughts()"
         },
@@ -4962,7 +4924,7 @@
       "stack": [
         {
           "path": "history.py",
-          "line_number": 17,
+          "line_number": 18,
           "function_name": "main",
           "code": "parting_thoughts()"
         },
@@ -4988,7 +4950,7 @@
       "stack": [
         {
           "path": "history.py",
-          "line_number": 17,
+          "line_number": 18,
           "function_name": "main",
           "code": "parting_thoughts()"
         },
@@ -5014,7 +4976,7 @@
       "stack": [
         {
           "path": "history.py",
-          "line_number": 17,
+          "line_number": 18,
           "function_name": "main",
           "code": "parting_thoughts()"
         },
@@ -5040,7 +5002,7 @@
       "stack": [
         {
           "path": "history.py",
-          "line_number": 17,
+          "line_number": 18,
           "function_name": "main",
           "code": "parting_thoughts()"
         }

@@ -9,6 +9,7 @@ def main():
 
     text("The history of AI is the story of three intellectual traditions:")
 
+
     symbolic_ai()
     neural_ai()
     statistical_ai()
@@ -34,8 +35,7 @@ def turing_test():
 
 def symbolic_ai():
     text("1956: John McCarthy organized workshop at Dartmouth College")
-    image("images/dartmouth.jpg", width=100)
-    text("Huangavin, CC-BY-3.0")
+    image("images/dartmouth.jpg", width=100), text("Huangavin, CC-BY-3.0") 
     text("- Convened the leading thinkers of the day (Shannon, Minsky, etc.)")
     text("- Goal was to make a \"significant advance\" in 2 months")
     text("- Coined the term \"artificial intelligence\"")
@@ -152,8 +152,8 @@ def foundation_models():
     text("- Models: OpenAI's o1-o4, DeepSeek's r1")
 
     text("### Industrialization of AI")
-    image("https://upload.wikimedia.org/wikipedia/commons/thumb/c/cc/Industrialisation.jpg/440px-Industrialisation.jpg", width=400)
-    text("Tharunbr77, CC-BY-SA-4.0")
+    image("https://upload.wikimedia.org/wikipedia/commons/thumb/c/cc/Industrialisation.jpg/440px-Industrialisation.jpg", width=400), text("Tharunbr77, CC-BY-SA-4.0")
+    
     text("GPT-4 supposedly has 1.8T parameters. "), article_link("https://www.hpcwire.com/2024/03/19/the-generative-ai-future-is-now-nvidias-huang-says")
     text("GPT-4 supposedly cost $100M to train. "), article_link("https://www.wired.com/story/openai-ceo-sam-altman-the-age-of-giant-ai-models-is-already-over/")
     text("xAI builds cluster with 200,000 H100s to train Grok. "), article_link("https://www.tomshardware.com/pc-components/gpus/elon-musk-is-doubling-the-worlds-largest-ai-gpu-cluster-expanding-colossus-gpu-cluster-to-200-000-soon-has-floated-300-000-in-the-past")

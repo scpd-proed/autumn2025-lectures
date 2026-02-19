@@ -44,8 +44,8 @@ def main():
     
 def prediction_task():
     text("Example task: image classification")
-    text("- **Input**: an image; e.g. (Von.grzanka, CC-BY-SA-3.0)")
-    image("https://upload.wikimedia.org/wikipedia/commons/thumb/b/b6/Felis_catus-cat_on_snow.jpg/1920px-Felis_catus-cat_on_snow.jpg", width=200)
+    text("- **Input**: an image; e.g.")
+    image("https://upload.wikimedia.org/wikipedia/commons/thumb/b/b6/Felis_catus-cat_on_snow.jpg/1920px-Felis_catus-cat_on_snow.jpg", width=200), text("Von.grzanka, CC-BY-SA-3.0")
     text("- **Output**: what kind of object it is (e.g., cat)")
 
     text("Example task: sentiment classification")
