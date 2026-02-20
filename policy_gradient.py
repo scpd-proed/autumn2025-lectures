@@ -283,7 +283,7 @@ def imitation_learning():
 
     text("Examples:")
     text("- Robotics: teleoperation")
-    image("https://news.stanford.edu/__data/assets/image/0028/134857/mobilealoha_2.jpg", width=200)
+    image("images/mobilealoha_2.jpg", width=200)
     text("- Math: human-written solution to a math problem")
 
 
