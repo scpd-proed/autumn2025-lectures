@@ -111,8 +111,7 @@ To run locally:
 
 ### Introduction to Language Models
 
-<!-- TODO: Need to add our own link -->
-- [language_models]()
+- [language_models](https://drive.google.com/file/d/1wlEK8sS45nRL4Edo2--on_exCu3S_Jrw/view?usp=drive_link)
 
 ## Module 9: AI, Ethics, and Society
 
@@ -122,5 +121,4 @@ To run locally:
 
 ### Economics of AI
 
-<!-- TODO: Need to add our own link -->
-- [economics]()
+- [economics](https://drive.google.com/file/d/1_S-_8KeVxt4hy6d4Rs3lgMI3IXmxvjCl/view?usp=drive_link)
