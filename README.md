@@ -1,18 +1,12 @@
 ## XCS221 Executable Lectures
 
-Welcome to XCS221!  This repository contains all the (executable) lectures,
-which are made using [edtrace](https://github.com/percyliang/edtrace).
+This repository contains all the executable lectures, made using [edtrace](https://github.com/percyliang/edtrace).
 
-Each lecture consists of stepping through Python files which you can either
-view in your browser on the links below or run locally if you clone this
-repository.  If you notice any problems or have any questions, please file an
-GitHub issue or submit a pull request.
+**No local setup required!** Use the links below to access the compiled, production-ready lecture notes directly in your browser.
 
-To run locally:
+If you notice any problems or have any questions, please file a GitHub issue or submit a pull request.
 
-    apt-get install graphviz
-    uv sync
-    python -m edtrace.execute -m welcome
+---
 
 ## Module 1: Introduction
 
@@ -122,3 +116,31 @@ To run locally:
 ### Economics of AI
 
 - [economics](https://drive.google.com/file/d/1_S-_8KeVxt4hy6d4Rs3lgMI3IXmxvjCl/view?usp=drive_link)
+
+---
+
+## For Course Developers Only
+
+> ⚠️ The instructions below are intended for the **course development team** and are not needed by students or contributors. They are used to update the GitHub-hosted lecture URLs.
+
+### Prerequisites
+
+**macOS:**
+```bash
+brew install graphviz
+uv sync
+```
+
+**Linux:**
+```bash
+sudo apt-get install graphviz
+uv sync
+```
+
+### Running an Executable Lecture
+
+```bash
+python -m edtrace.execute -m welcome
+```
+
+This will generate a `.json` file that wires into the static frontend and is served via GitHub Pages.
